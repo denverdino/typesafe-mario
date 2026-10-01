@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import json
 from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from .actions import ACTION_TO_INDEX, JUMP_ACTIONS, JUMP_RELEASE_ACTION, Action
+from .checkpoint import Checkpoint, checkpoint_from_log
 from .dashboard import DashboardCommand, LiveDashboard
 from .policy import Decision, Policy
-from .state import MarioStateParser
+from .state import MarioSnapshot, MarioStateParser
 
 
 def _unwrap_ram(env: Any) -> Any:
@@ -42,39 +45,145 @@ def create_mario_env(env_id: str, render_mode: str = "human") -> Any:
     return JoypadSpace(env, SIMPLE_MOVEMENT)
 
 
-def _record_decision(
-    log: Any,
+class EpisodeLog:
+    """Attribute every executed frame to its active decision, including wait frames."""
+
+    def __init__(self, log: Any, run_config: dict[str, Any] | None = None) -> None:
+        self.log = log
+        self.run_config = run_config or {}
+        self.episode_id = uuid4().hex
+        self.active: dict[str, Any] | None = None
+        self.total_reward = 0.0
+        self.total_frames = 0
+        self.ended = False
+
+    def write(self, record: dict[str, Any]) -> None:
+        self.log.write(
+            json.dumps(
+                {
+                    "schema_version": 2,
+                    "episode_id": self.episode_id,
+                    "run_config": self.run_config,
+                    **record,
+                },
+                separators=(",", ":"),
+            )
+            + "\n"
+        )
+        self.log.flush()
+
+    def begin(
+        self,
+        index: int,
+        observed: MarioSnapshot,
+        decision: Decision,
+        applied: MarioSnapshot,
+        delay_frames: int,
+    ) -> None:
+        self.active = {
+            "record_type": "decision",
+            "decision": index,
+            "state": observed.to_state(),
+            "debug_state": observed.to_debug_state(),
+            "state_text": observed.to_text(),
+            "action": decision.action.value,
+            "confidence": decision.confidence,
+            "probabilities": dict(decision.probabilities),
+            "jump_needed_probability": decision.jump_needed_probability,
+            "jump_intent": decision.jump_intent,
+            "jump_intent_probabilities": dict(decision.jump_intent_probabilities),
+            "danger_score": decision.danger_score,
+            "latency_ms": decision.latency_ms,
+            "reward": 0.0,
+            "execution": {
+                "start_frame": self.total_frames,
+                "frames": 0,
+                "actions": [],
+                "response_delay_frames": delay_frames,
+                "start_state": applied.to_state(),
+            },
+        }
+
+    def step(self, action: Action, reward: float) -> None:
+        self.total_frames += 1
+        self.total_reward += reward
+        if self.active is not None:
+            self.active["reward"] += reward
+            self.active["execution"]["frames"] += 1
+            self.active["execution"]["actions"].append(action.value)
+
+    def finish(self, snapshot: MarioSnapshot, terminated: bool, truncated: bool) -> None:
+        if self.active is not None:
+            self.write(
+                {
+                    **self.active,
+                    "result_state": snapshot.to_state(),
+                    "terminated": bool(terminated),
+                    "truncated": bool(truncated),
+                }
+            )
+            self.active = None
+
+    def end(self, snapshot: MarioSnapshot, terminated: bool, truncated: bool, reason: str) -> None:
+        if self.ended:
+            return
+        self.finish(snapshot, terminated, truncated)
+        self.write(
+            {
+                "record_type": "episode_end",
+                "reason": reason,
+                "result_state": snapshot.to_state(),
+                "reward": self.total_reward,
+                "frames": self.total_frames,
+                "terminated": bool(terminated),
+                "truncated": bool(truncated),
+            }
+        )
+        self.ended = True
+
+
+def _end_reason(snapshot: MarioSnapshot, terminated: bool, truncated: bool) -> str:
+    if snapshot.clear:
+        return "stage_clear"
+    if snapshot.dead:
+        return "death"
+    if truncated:
+        return "truncated"
+    return "terminated" if terminated else "decision_limit"
+
+
+def _first_frame_action(snapshot: MarioSnapshot, action: Action) -> Action:
+    if action in JUMP_ACTIONS and snapshot.grounded and snapshot.previous_action in JUMP_ACTIONS:
+        return JUMP_RELEASE_ACTION[action]
+    return action
+
+
+def _advance_frame(
+    env: Any,
+    parser: MarioStateParser,
+    snapshot: MarioSnapshot,
+    action: Action,
     *,
-    decision_index: int,
-    snapshot: Any,
-    decision: Decision,
-    reward: float,
-    terminated: bool,
-    truncated: bool,
-) -> None:
-    record = {
-        "decision": decision_index,
-        "state": snapshot.to_state(),
-        "debug_state": snapshot.to_debug_state(),
-        "state_text": snapshot.to_text(),
-        "action": decision.action.value,
-        "confidence": decision.confidence,
-        "probabilities": dict(decision.probabilities),
-        "jump_needed_probability": decision.jump_needed_probability,
-        "danger_score": decision.danger_score,
-        "latency_ms": decision.latency_ms,
-        "reward": reward,
-        "terminated": bool(terminated),
-        "truncated": bool(truncated),
-    }
-    log.write(json.dumps(record, separators=(",", ":")) + "\n")
-    log.flush()
+    new_decision: bool,
+    delay_frames: int,
+):
+    if new_decision:
+        action = _first_frame_action(snapshot, action)
+    frame, reward, terminated, truncated, info = env.step(ACTION_TO_INDEX[action])
+    snapshot = parser.parse(
+        info,
+        _unwrap_ram(env),
+        previous_action=action.value,
+        previous_reward=float(reward),
+        previous_response_delay_frames=delay_frames,
+    )
+    return frame, float(reward), terminated, truncated, snapshot, action
 
 
 def _run_realtime_dashboard(
     *,
     env: Any,
-    dashboard: LiveDashboard,
+    dashboard: LiveDashboard | None,
     policy: Policy,
     parser: MarioStateParser,
     frame: Any,
@@ -83,128 +192,155 @@ def _run_realtime_dashboard(
     frames_per_decision: int,
     max_decisions: int,
     screenshot_path: Path | None,
+    run_config: dict[str, Any] | None = None,
+    retry_checkpoint: Checkpoint | None = None,
 ) -> None:
+    """Fixed emulator-frame cycles, with one future action being planned in parallel."""
     actions = tuple(Action)
     active_decision: Decision | None = None
     pending: Future[Decision] | None = None
-    pending_snapshot: Any = None
+    pending_snapshot: MarioSnapshot | None = None
     pending_index = 0
-    pending_request_frame = 0
     next_index = 0
-    frame_index = 0
-    last_request_frame = -frames_per_decision
-    episode_reward = 0.0
-    reward_since_decision = 0.0
-    previous_action: Action | None = None
-    previous_reward = 0.0
-    previous_latency_ms = 0.0
+    cycle_frames = 0
+    pending_request_frame = 0
     previous_response_delay_frames = 0
+    recorder = EpisodeLog(log, run_config)
     screenshot_saved = False
     terminated = truncated = False
+    if retry_checkpoint is not None:
+        frame, parser, snapshot = retry_checkpoint.restore(env)
+    else:
+        snapshot = parser.parse(info, _unwrap_ram(env), previous_response_delay_frames=0)
 
     with ThreadPoolExecutor(max_workers=1, thread_name_prefix="typesafe-jev") as executor:
         while True:
             decision_updated = False
-            snapshot = parser.parse(
-                info,
-                _unwrap_ram(env),
-                previous_action=previous_action.value if previous_action else None,
-                previous_reward=previous_reward,
-                previous_latency_ms=previous_latency_ms,
-                previous_response_delay_frames=previous_response_delay_frames,
-            )
-
-            if pending is not None and pending.done():
-                active_decision = pending.result()
-                _record_decision(
-                    log,
-                    decision_index=pending_index,
-                    snapshot=pending_snapshot,
-                    decision=active_decision,
-                    reward=reward_since_decision,
-                    terminated=terminated,
-                    truncated=truncated,
+            cycle_complete = active_decision is None or cycle_frames >= frames_per_decision
+            run_ended = bool(snapshot.dead or snapshot.clear or terminated or truncated)
+            # Headless/game modes can block here; the dashboard keeps drawing while waiting.
+            if (
+                not run_ended
+                and cycle_complete
+                and pending is not None
+                and (pending.done() or dashboard is None)
+            ):
+                try:
+                    decision = pending.result()
+                except Exception:
+                    recorder.end(snapshot, terminated, truncated, "policy_error")
+                    raise
+                pending = None
+                recorder.finish(snapshot, terminated, truncated)
+                active_decision = decision
+                previous_response_delay_frames = recorder.total_frames - pending_request_frame
+                recorder.begin(
+                    pending_index,
+                    pending_snapshot,
+                    decision,
+                    snapshot,
+                    previous_response_delay_frames,
                 )
                 print(
-                    f"#{pending_index:04d} x={pending_snapshot.x:04d} "
-                    f"action={active_decision.action.value:<15} "
-                    f"confidence={active_decision.confidence:.2f} "
-                    f"latency={active_decision.latency_ms:.0f}ms"
+                    f"#{pending_index:04d} observed_x={pending_snapshot.x:04d} "
+                    f"applied_x={snapshot.x:04d} action={decision.action.value:<15} "
+                    f"confidence={decision.confidence:.2f} latency={decision.latency_ms:.0f}ms"
                 )
-                pending = None
-                reward_since_decision = 0.0
+                cycle_frames = 0
+                cycle_complete = False
                 decision_updated = True
-                previous_latency_ms = active_decision.latency_ms
-                previous_response_delay_frames = frame_index - pending_request_frame
+
+            run_ended = run_ended or (
+                cycle_complete and pending is None and next_index >= max_decisions
+            )
+            if not run_ended and pending is None and next_index < max_decisions:
+                # The next response applies only AFTER the newly selected action finishes.
+                # Bootstrap is the sole zero-lookahead request, with the emulator paused.
+                remaining = frames_per_decision - cycle_frames if active_decision else 0
+                scheduled = active_decision.action if active_decision else None
+                pending_snapshot = replace(
+                    snapshot,
+                    frames_until_action=remaining,
+                    scheduled_action=scheduled,
+                    scheduled_first_frame_action=(
+                        _first_frame_action(snapshot, scheduled) if scheduled else None
+                    ),
+                )
+                pending_index = next_index
+                pending_request_frame = recorder.total_frames
+                pending = executor.submit(policy.choose, pending_snapshot, actions)
+                next_index += 1
+
+            if not run_ended and active_decision is not None and not cycle_complete:
+                frame, reward, terminated, truncated, snapshot, actual = _advance_frame(
+                    env,
+                    parser,
+                    snapshot,
+                    active_decision.action,
+                    new_decision=decision_updated,
+                    delay_frames=previous_response_delay_frames,
+                )
+                recorder.step(actual, reward)
+                cycle_frames += 1
+                if cycle_frames == frames_per_decision:
+                    recorder.finish(snapshot, terminated, truncated)
 
             run_ended = bool(
-                snapshot.dead
+                run_ended
+                or snapshot.dead
                 or snapshot.clear
                 or terminated
                 or truncated
-                or (next_index >= max_decisions and pending is None)
+                or (
+                    cycle_frames >= frames_per_decision
+                    and pending is None
+                    and next_index >= max_decisions
+                )
             )
-
-            if (
-                not run_ended
-                and pending is None
-                and next_index < max_decisions
-                and frame_index - last_request_frame >= frames_per_decision
-            ):
-                pending_snapshot = snapshot
-                pending_index = next_index
-                pending = executor.submit(policy.choose, snapshot, actions)
-                pending_request_frame = frame_index
-                next_index += 1
-                last_request_frame = frame_index
-
-            if not run_ended:
-                action = active_decision.action if active_decision else Action.NOOP
-                if decision_updated and action in JUMP_ACTIONS and snapshot.grounded:
-                    # A new jump macro needs a button-up edge before A is pressed again.
-                    action = JUMP_RELEASE_ACTION[action]
-                frame, reward, terminated, truncated, info = env.step(ACTION_TO_INDEX[action])
-                previous_action = action
-                previous_reward = float(reward)
-                reward_since_decision += float(reward)
-                episode_reward += float(reward)
-                frame_index += 1
+            if run_ended:
+                recorder.end(
+                    snapshot, terminated, truncated, _end_reason(snapshot, terminated, truncated)
+                )
+            if dashboard is None:
+                if run_ended:
+                    break
+                continue
 
             command = dashboard.draw(
                 frame,
                 snapshot,
                 active_decision,
                 decision_index=max(0, next_index - 1),
-                episode_reward=episode_reward,
-                waiting=pending is not None,
+                episode_reward=recorder.total_reward,
+                waiting=pending is not None and not pending.done(),
                 run_ended=run_ended,
             )
             if screenshot_path is not None and active_decision is not None and not screenshot_saved:
                 dashboard.save(screenshot_path)
                 screenshot_saved = True
             if command == DashboardCommand.QUIT:
+                recorder.end(snapshot, terminated, truncated, "quit")
                 break
             if command == DashboardCommand.RESTART:
+                recorder.end(snapshot, terminated, truncated, "restart")
+                recorder = EpisodeLog(log, run_config)
                 if pending is not None:
                     pending.cancel()
-                frame, info = env.reset()
-                parser.reset()
+                if retry_checkpoint is not None:
+                    frame, parser, snapshot = retry_checkpoint.restore(env)
+                else:
+                    frame, info = env.reset()
+                    parser.reset()
+                    snapshot = parser.parse(
+                        info, _unwrap_ram(env), previous_response_delay_frames=0
+                    )
                 active_decision = None
                 pending = None
                 pending_snapshot = None
-                pending_index = 0
-                pending_request_frame = 0
-                next_index = 0
-                frame_index = 0
-                last_request_frame = -frames_per_decision
-                episode_reward = 0.0
-                reward_since_decision = 0.0
-                previous_action = None
-                previous_reward = 0.0
-                previous_latency_ms = 0.0
+                pending_index = next_index = cycle_frames = pending_request_frame = 0
                 previous_response_delay_frames = 0
                 terminated = truncated = False
-                print("--- Restarted ---")
+                print("--- Restored checkpoint ---" if retry_checkpoint else "--- Restarted ---")
 
 
 def run_episode(
@@ -217,85 +353,73 @@ def run_episode(
     artifacts_dir: Path,
     display: str = "dashboard",
     screenshot_path: Path | None = None,
+    resume_log: Path | None = None,
+    resume_decision: int | None = None,
+    resume_episode: str | None = None,
 ) -> Path:
     if frames_per_decision < 1:
         raise ValueError("frames_per_decision must be at least 1")
 
     if display not in {"dashboard", "game", "none"}:
         raise ValueError("display must be dashboard, game, or none")
+    if (resume_log is None) != (resume_decision is None):
+        raise ValueError("--resume-log and --resume-decision must be supplied together")
+    if resume_episode is not None and resume_log is None:
+        raise ValueError("--resume-episode requires --resume-log")
     render_mode = "human" if display == "game" else "rgb_array"
     env = create_mario_env(env_id, render_mode=render_mode)
     dashboard = LiveDashboard() if display == "dashboard" else None
     parser = MarioStateParser(decision_horizon_frames=frames_per_decision)
     artifacts_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     log_path = artifacts_dir / f"run-{timestamp}.jsonl"
 
-    frame, info = env.reset(seed=seed)
-
+    run_config = {
+        "env_id": env_id,
+        "seed": seed,
+        "display": display,
+        "frames_per_decision": frames_per_decision,
+        "control_mode": "fixed_frame_lookahead",
+        "policy": type(policy).__name__,
+        "prompt_version": 28,
+        "state_version": 21,
+        "landing_replan": False,
+    }
     try:
+        retry_checkpoint = None
+        if resume_log is not None:
+            retry_checkpoint = checkpoint_from_log(
+                env,
+                resume_log,
+                decision=resume_decision,
+                env_id=env_id,
+                frames_per_decision=frames_per_decision,
+                episode_id=resume_episode,
+            )
+            run_config["resume"] = retry_checkpoint.provenance
+            run_config["seed"] = retry_checkpoint.provenance["source_seed"]
+            frame, info = None, {}
+            print(
+                f"Checkpoint ready: before decision {resume_decision}, "
+                f"x={retry_checkpoint.snapshot.x}, y={retry_checkpoint.snapshot.y}"
+            )
+        else:
+            frame, info = env.reset(seed=seed)
         with log_path.open("w", encoding="utf-8") as log:
-            if dashboard:
-                _run_realtime_dashboard(
-                    env=env,
-                    dashboard=dashboard,
-                    policy=policy,
-                    parser=parser,
-                    frame=frame,
-                    info=info,
-                    log=log,
-                    frames_per_decision=frames_per_decision,
-                    max_decisions=max_decisions,
-                    screenshot_path=screenshot_path,
-                )
-                return log_path
-
-            previous_action: Action | None = None
-            previous_reward = 0.0
-            previous_latency_ms = 0.0
-            actions = tuple(Action)
-            for decision_index in range(max_decisions):
-                snapshot = parser.parse(
-                    info,
-                    _unwrap_ram(env),
-                    previous_action=previous_action.value if previous_action else None,
-                    previous_reward=previous_reward,
-                    previous_latency_ms=previous_latency_ms,
-                    previous_response_delay_frames=0,
-                )
-                if snapshot.dead or snapshot.clear:
-                    break
-
-                decision = policy.choose(snapshot, actions)
-                action_index = ACTION_TO_INDEX[decision.action]
-                total_reward = 0.0
-                terminated = truncated = False
-                for _ in range(frames_per_decision):
-                    frame, reward, terminated, truncated, info = env.step(action_index)
-                    total_reward += float(reward)
-                    if terminated or truncated:
-                        break
-
-                _record_decision(
-                    log,
-                    decision_index=decision_index,
-                    snapshot=snapshot,
-                    decision=decision,
-                    reward=total_reward,
-                    terminated=terminated,
-                    truncated=truncated,
-                )
-                print(
-                    f"#{decision_index:04d} x={snapshot.x:04d} "
-                    f"action={decision.action.value:<15} "
-                    f"confidence={decision.confidence:.2f} latency={decision.latency_ms:.0f}ms"
-                )
-
-                previous_action = decision.action
-                previous_reward = total_reward
-                previous_latency_ms = decision.latency_ms
-                if terminated or truncated:
-                    break
+            _run_realtime_dashboard(
+                env=env,
+                dashboard=dashboard,
+                policy=policy,
+                parser=parser,
+                frame=frame,
+                info=info,
+                log=log,
+                frames_per_decision=frames_per_decision,
+                max_decisions=max_decisions,
+                screenshot_path=screenshot_path,
+                run_config=run_config,
+                retry_checkpoint=retry_checkpoint,
+            )
     finally:
         if dashboard:
             dashboard.close()

@@ -34,21 +34,17 @@ JUMP_RELEASE_ACTION: dict[Action, Action] = {
 
 
 ACTION_DESCRIPTIONS: dict[Action, str] = {
-    Action.NOOP: "Release the controls and let current momentum continue.",
-    Action.RIGHT: "Move right at normal speed without jumping.",
-    Action.RIGHT_JUMP: (
-        "Start a controlled forward jump, or keep holding jump while rising to preserve height."
-    ),
-    Action.RIGHT_RUN: (
-        "Run right only while trusted terrain is clear and "
-        "`hazard.jump_must_start_this_decision` is false."
-    ),
-    Action.RIGHT_RUN_JUMP: (
-        "Start a running jump when terrain or projected contact requires it, or keep holding "
-        "it while rising. Prefer this when `hazard.jump_must_start_this_decision` is true."
-    ),
-    Action.JUMP: (
-        "Jump mostly in place, or keep holding jump while rising when forward motion is unsafe."
-    ),
-    Action.LEFT: "Move left to evade danger or recover from an overshoot.",
+    Action.NOOP: "Release all controls; coast. Only for deliberate waiting, not a rising jump.",
+    Action.RIGHT: "Walk right for precision positioning; releases A and shortens a rising jump. Choose this when precision_target_cleared to land on the intermediate step. "
+    "Do not use to continue an ascent that still needs height.",
+    Action.RIGHT_JUMP: "Continue holding A and right throughout a walking jump's ascent, "
+    "or jump onto a nearby obstacle from ground. Keeps necessary jump height.",
+    Action.RIGHT_RUN: "Default forward advance on clear supported ground: hold right and B. "
+    "Releases A; not for maintaining a rising jump or missing an urgent takeoff.",
+    Action.RIGHT_RUN_JUMP: "Continue holding a running jump during ascent, or take off now "
+    "to clear an enemy/gap at its takeoff window. Preserve forward speed and jump height.",
+    Action.JUMP: "Jump or hold A without direction when forward motion must be limited. "
+    "Existing horizontal momentum can continue.",
+    Action.LEFT: "Brake rightward momentum then move left, to reach a specific safe position. "
+    "Releases A; braking takes time and cannot instantly evade contact.",
 }

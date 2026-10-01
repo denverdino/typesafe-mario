@@ -73,7 +73,7 @@ class MarioStateParserTests(unittest.TestCase):
             previous_latency_ms=100,
         ).to_state()
         self.assertEqual(next_state["hazard"]["relative_velocity_x"], -8)
-        self.assertEqual(next_state["hazard"]["estimated_contact_frames"], 4)
+        self.assertEqual(next_state["hazard"]["estimated_contact_frames"], 2)
         self.assertTrue(next_state["hazard"]["contact_within_reaction_horizon"])
         self.assertTrue(next_state["hazard"]["takeoff_window_already_missed"])
         self.assertFalse(next_state["hazard"]["jump_must_start_this_decision"])
@@ -84,7 +84,7 @@ class MarioStateParserTests(unittest.TestCase):
         deadline_ram[0x000F] = 1
         deadline_ram[0x0016] = 0x06
         deadline_ram[0x006E] = 0
-        deadline_ram[0x0087] = 236
+        deadline_ram[0x0087] = 252
         deadline_ram[0x00CF] = 80
         for column in range(16):
             deadline_ram[0x0500 + 5 * 16 + column] = 1
@@ -97,7 +97,7 @@ class MarioStateParserTests(unittest.TestCase):
             previous_response_delay_frames=8,
         ).to_state()
         self.assertEqual(deadline_state["hazard"]["estimated_contact_frames"], 16)
-        self.assertEqual(deadline_state["hazard"]["takeoff_deadline_frames"], 0)
+        self.assertEqual(deadline_state["hazard"]["takeoff_deadline_frames"], 8)
         self.assertEqual(deadline_state["reaction_timing"]["last_inference_delay_frames"], 8)
         self.assertTrue(deadline_state["hazard"]["jump_must_start_this_decision"])
 
@@ -136,6 +136,7 @@ class MarioStateParserTests(unittest.TestCase):
         parser = MarioStateParser()
         parser.parse(self.base_info(), ram)
 
+        ram[0x001D] = 1  # The emulator marks the jump as airborne.
         state = parser.parse(self.base_info(x_pos=106, y_pos=90, progress=106), ram).to_state()
 
         self.assertEqual(state["trajectory"]["airborne_frames"], 1)

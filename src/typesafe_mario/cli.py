@@ -65,7 +65,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--frames-per-decision",
         type=int,
         default=8,
-        help="Minimum macro duration in emulator frames",
+        help="Fixed emulator frames per action; plan the next action during this cycle",
     )
     play.add_argument("--max-decisions", type=int, default=2000)
     play.add_argument("--seed", type=int, default=123)
@@ -77,6 +77,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Combined telemetry dashboard, plain game window, or headless mode",
     )
     play.add_argument("--artifacts-dir", type=Path, default=Path("artifacts"))
+    play.add_argument(
+        "--resume-log",
+        type=Path,
+        help="Reconstruct a retry checkpoint from a previous run log, without API calls",
+    )
+    play.add_argument(
+        "--resume-decision",
+        type=int,
+        help="Stop replay BEFORE this zero-based decision; Restart returns here",
+    )
+    play.add_argument(
+        "--resume-episode", help="Episode ID to replay (required for logs with multiple episodes)"
+    )
     play.add_argument(
         "--screenshot",
         type=Path,
@@ -100,6 +113,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             artifacts_dir=args.artifacts_dir,
             display=args.display,
             screenshot_path=args.screenshot,
+            resume_log=args.resume_log,
+            resume_decision=args.resume_decision,
+            resume_episode=args.resume_episode,
         )
         print(f"Run log: {log_path.resolve()}")
         return 0

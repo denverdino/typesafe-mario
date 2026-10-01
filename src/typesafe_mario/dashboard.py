@@ -273,7 +273,8 @@ class LiveDashboard:
         y += 24
         jump = decision.jump_needed_probability if decision else None
         danger = clamp01((decision.danger_score or 0.0) / 2.0) if decision else 0.0
-        self._bar(label="Jump useful now", value=clamp01(jump), x=x, y=y, width=width)
+        intent = decision.jump_intent if decision and decision.jump_intent else "unknown"
+        self._bar(label=f"Start/hold A ({intent})", value=clamp01(jump), x=x, y=y, width=width)
         y += 40
         danger_color = t.danger if danger >= 0.66 else t.warning
         self._bar(label="Immediate danger", value=danger, x=x, y=y, width=width, color=danger_color)
