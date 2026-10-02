@@ -52,12 +52,18 @@ def _model_prediction(prediction: dict[str, Any]) -> dict[str, Any]:
                     "max_forward_progress_pixels",
                     "max_height_y",
                     "continuation_complete",
+                    "landing_resolved",
                 )
                 if k in branch and branch[k] is not None
             }
             compact["end_player"] = {
                 k: branch["end_player"][k] for k in ("x", "height_y", "grounded")
             }
+            # Water-only markers stay sparse; recovery already has many branches.
+            if branch.get("swimming_resolved"):
+                compact["swimming_resolved"] = True
+            if branch["end_player"].get("swimming"):
+                compact["end_player"]["swimming"] = True
             encounters = []
             for encounter in branch["enemy_encounters"]:
                 identity = encounter["id"]
@@ -155,6 +161,7 @@ class MarioSnapshot:
     dead: bool = False
     clear: bool = False
     grounded: bool = True
+    swimming: bool = False
     landed_this_frame: bool = False
     precision_landing_target: dict[str, Any] | None = None
     jump_phase: str = "grounded"
@@ -233,6 +240,15 @@ class MarioSnapshot:
         )
 
     def landing_features(self) -> dict[str, Any]:
+        if self.swimming:
+            return {
+                "confidence": "not_applicable",
+                "assumption": "Swimming uses repeated A strokes, not a ballistic landing arc.",
+                "frames": None,
+                "x": None,
+                "standing_y": None,
+                "within_safe_surface": None,
+            }
         return landing_projection(
             self.navigation_features()["landing_surfaces"],
             x=self.x,
@@ -671,7 +687,7 @@ class MarioSnapshot:
             "obstacle_start_x": self.preview_obstacle_start_x,
             "obstacle_height_tiles": self.last_grounded_obstacle_height_tiles,
         }
-        return {
+        state = {
             "objective": self.goal,
             "level": {"world": self.world, "stage": self.stage, "area": self.area},
             "player": {
@@ -681,10 +697,12 @@ class MarioSnapshot:
                 "horizontal_speed_px_per_frame": self.dx,
                 "vertical_speed_px_per_frame": self.dy,
                 "grounded": self.grounded,
+                "swimming": self.swimming,
                 "landed_this_frame": self.landed_this_frame,
                 "jump_button_held": self.previous_action in JUMP_ACTIONS,
-                "can_start_jump": self.grounded,
-                "jump_requires_release": self.grounded and self.previous_action in JUMP_ACTIONS,
+                "can_start_jump": self.grounded or self.swimming,
+                "jump_requires_release": (self.grounded or self.swimming)
+                and self.previous_action in JUMP_ACTIONS,
                 "jump_phase": self.jump_phase,
                 "powerup_status": self.status,
             },
@@ -744,6 +762,33 @@ class MarioSnapshot:
                 "stage_clear": self.clear,
             },
         }
+        if self.swimming:
+            # Land-only heuristics otherwise contradict the native swimming physics.
+            state["trajectory"] = {
+                "movement_mode": "swimming",
+                "landing_projection": self.landing_features(),
+                "stroke_control": "A strokes can start while swimming, including while sinking. "
+                "Consecutive A actions release for one frame at each decision boundary, then "
+                "press again. Releasing A for a whole cycle allows descent; it does not hover.",
+            }
+            state["hazard"] = {
+                "enemy_ahead": any(e.dx_pixels >= 0 for e in self.enemies),
+                "upcoming_enemies": [e.to_state() for e in self.enemies],
+                "assumption": "Use native forecasts for water currents and enemy collisions. "
+                "Do not assume swimming over an enemy permits stomping it.",
+            }
+            for key in (
+                "stair_approach",
+                "jump_reach_reference",
+                "gap_takeoff_window",
+                "last_grounded_preview",
+            ):
+                terrain.pop(key, None)
+            terrain["gap_semantics"] = (
+                "Gaps are seabed openings, not mandatory ballistic jumps. "
+                "Keep enough height to swim across; currents can pull Mario down."
+            )
+        return state
 
     def control_outcome(self) -> str:
         if self.dead:
@@ -1000,6 +1045,9 @@ class MarioStateParser:
             direction=direction,
             vertical_motion=vertical_motion,
             airborne=not grounded,
+            # SMB SwimmingFlag, rather than world/stage or zero-filled AreaType.
+            # This also switches off after the underwater exit pipe transition.
+            swimming=bool(self._ram_byte(ram, 0x0704)),
             status=str(info.get("status", "small")),
             player_state=self._integer(info, "player_state", 8),
             lives=self._integer(info, "life", self._integer(info, "lives", 0)),
@@ -1214,7 +1262,8 @@ class MarioStateParser:
         # SMB side collision accepts the lower mouth tile while grounded/facing right.
         for tx in range(max(0, mario_x // 16 - 4), mario_x // 16 + 7):
             for row in range(11):
-                if (tile(tx, row), tile(tx, row + 1)) != (0x1C, 0x1F):
+                # Normal sideways pipe and the underwater exit's distinct pair.
+                if (tile(tx, row), tile(tx, row + 1)) not in {(0x1C, 0x1F), (0x6B, 0x6C)}:
                     continue
                 return {
                     "mouth_x": tx * 16,

@@ -156,7 +156,10 @@ def _end_reason(snapshot: MarioSnapshot, terminated: bool, truncated: bool) -> s
 
 def _first_frame_action(snapshot: MarioSnapshot, action: Action) -> Action:
     return first_frame_action(
-        action, grounded=snapshot.grounded, previous_action=snapshot.previous_action
+        action,
+        grounded=snapshot.grounded,
+        previous_action=snapshot.previous_action,
+        swimming=snapshot.swimming,
     )
 
 
@@ -388,10 +391,10 @@ def run_episode(
         "frames_per_decision": frames_per_decision,
         "control_mode": "fixed_frame_lookahead",
         "policy": type(policy).__name__,
-        "prompt_version": 31,
-        "state_version": 24,
+        "prompt_version": 33,
+        "state_version": 26,
         "prediction_backend": "native_checkpoint",
-        "prediction_version": 2,
+        "prediction_version": 4,
         "landing_replan": False,
     }
     try:

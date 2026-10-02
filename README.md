@@ -46,6 +46,9 @@ committed buttons, then every candidate action. Each candidate runs for one norm
 cycle and has two explicit continuations: `repeat` repeats the candidate, while
 `run_jump` uses forward running jumps from the next boundary. Each path covers
 48 frames after application (at least two full cycles for longer cadences).
+If still airborne at that boundary, simulation continues for up to 48 extra frames
+until landing or termination. An unresolved flight is `unknown`, never `safe`;
+this prevents a fall into a pit from appearing safe just before the death flag.
 Recovery or a nearby springboard extends this to 96 frames and adds walking,
 release-then-jump, two-cycle repeat-then-jump and vertical-jump-then-run branches.
 The engine handles enemy turns, terrain, stomps and bounces; every encountered
@@ -58,8 +61,14 @@ object definitions to keep expanded recovery requests within the model context.
 Full landing clearances and phase events remain in `debug_state.prediction_details`;
 sampled per-frame paths are retained in `debug_state.prediction_traces`.
 `safe` means the specified finite button sequence survived without observed damage;
-it says nothing about other follow-up actions. TypeSafe still chooses the actual
-action during normal progress. During a detected stall, the recovery selector can
+it says nothing about other follow-up actions. TypeSafe proposes the action. If all
+of its forecast branches are explicitly unsafe and another allowed action has a
+complete safe continuation, a guard selects that alternative using the model's
+probabilities (forecast progress breaks ties). This applies before stall recovery;
+`selection.mode=forecast_safety` records the original and executed choices without
+changing the original probabilities. Unknown or missing forecasts alone do not
+trigger the guard, and without a safe alternative the proposal is retained.
+During a detected stall, the recovery selector can
 choose a forecast-safe alternative to an ineffective proposal, as described below.
 
 Prediction restores emulator, parser, reward and wrapper state before gameplay
@@ -68,6 +77,31 @@ If a backend lacks native snapshots, forecasts are explicitly unavailable and th
 policy uses its previous observation-based guidance. Logs identify the predictor
 backend/version and record its compute time. Unexpected prediction errors restore
 the scene and terminate with `prediction_error` rather than continuing silently.
+
+### Underwater control
+
+The engine's `SwimmingFlag` selects swimming behavior, including in 2-2 and 7-2;
+the world/stage number is not used to guess the movement mode. This switches back
+to land controls when Mario leaves the water area. At each action boundary,
+consecutive A actions release A for one frame and press again for the remainder
+of the cycle, allowing repeated strokes without landing. Execution, committed
+prefix forecasts and candidate rollouts share the same button semantics.
+
+Swimming state omits ballistic landing targets and gap takeoff instructions.
+The policy uses strokes to rise and releases A to descend below obstacles or
+align with an exit pipe; NOOP and LEFT do not maintain depth. Native forecasts
+can resolve a swimming path without landing when its endpoint is no longer
+sinking and is above the bottom danger zone. Descents still get the bounded
+48-frame extension and remain unknown if unresolved, so sinking into a seabed
+opening is not automatically considered safe. Land flight checks are unchanged.
+Sideways exit detection recognizes both the land and underwater pipe metatiles,
+so the policy can descend to the water exit instead of repeatedly swimming into
+the wall above it.
+
+`tests/test_swimming.py` replays the 2-2 stall from
+`run-20261002T023404.251790Z.jsonl`: at x=1060, continuously held A sinks and dies,
+while repeated strokes escape the opening. It also checks forecast/execution
+agreement, committed input timing, and restoration of land semantics.
 
 ### Timed interactions and recovery
 

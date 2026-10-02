@@ -62,10 +62,16 @@ def test_forecasts_show_collision_and_early_braking_across_multiple_enemies(scen
     assert run["end_player"]["x"] == 642
     assert len(run["enemy_encounters"]) >= 2
     assert len([e for e in run["enemy_encounters"] if e["kind"] == "goomba"]) == 2
-    brake = by_action["left"]["continuations"]["run_jump"]
+    brake = by_action["left"]["continuations"]["repeat"]
     assert brake["outcome"] == "survived_horizon"
-    assert brake["end_player"]["x"] > 642
+    assert brake["end_player"]["grounded"]
     assert brake["landings"]
+    # Switching straight back to run-jumps survives 48 frames but then hits
+    # the next enemy before landing. The extended flight must expose that.
+    premature_jump = by_action["left"]["continuations"]["run_jump"]
+    assert premature_jump["outcome"] == "death"
+    assert premature_jump["terminal_frame"] == 70
+    assert premature_jump["end_player"]["x"] == 737
     assert "prediction_traces" not in result.to_state()
     assert result.to_debug_state()["prediction_traces"]
 

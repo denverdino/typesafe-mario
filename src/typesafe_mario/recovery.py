@@ -40,10 +40,43 @@ class ProgressMemory:
 def recover_decision(
     state: dict[str, Any], decision: "Decision", actions: tuple[Action, ...]
 ) -> "Decision":
+    prediction = state.get("prediction", {})
+    forecasts = {f["action"]: f for f in prediction.get("action_forecasts", [])}
+    proposed = forecasts.get(decision.action.value, {}).get("continuations", {})
+    # A moving Mario can enter an unrecoverable fall long before stall recovery.
+    # Intervene only with explicit adverse evidence and a simulated alternative;
+    # missing/unknown branches are not proof that the proposal is unsafe.
+    if proposed and all(b.get("risk") == "unsafe" for b in proposed.values()):
+        alternatives = {}
+        for action in actions:
+            safe = [
+                b
+                for b in forecasts.get(action.value, {}).get("continuations", {}).values()
+                if b.get("risk") == "safe" and b.get("continuation_complete", True)
+            ]
+            if safe:
+                alternatives[action] = max(b.get("max_forward_progress_pixels", 0) for b in safe)
+        if alternatives:
+            selected = max(
+                alternatives,
+                key=lambda a: (decision.probabilities.get(a.value, 0), alternatives[a]),
+            )
+            return replace(
+                decision,
+                action=selected,
+                confidence=decision.probabilities.get(selected.value, 0),
+                selection={
+                    "mode": "forecast_safety",
+                    "reason": "all_proposed_continuations_unsafe",
+                    "proposed_action": decision.action.value,
+                    "proposed_confidence": decision.confidence,
+                    "selected_action": selected.value,
+                    "alternatives": {a.value: score for a, score in alternatives.items()},
+                },
+            )
     recovery = state.get("recovery", {})
     if not recovery.get("active"):
         return decision
-    prediction = state.get("prediction", {})
     counts = recovery.get("action_frames", {})
     cycle = prediction.get("action_cycle_frames", 8)
     # A different proposal already explores; avoid replacing it merely for diversity.

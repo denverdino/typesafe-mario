@@ -33,9 +33,11 @@ JUMP_RELEASE_ACTION: dict[Action, Action] = {
 }
 
 
-def first_frame_action(action: Action, *, grounded: bool, previous_action: str | None) -> Action:
+def first_frame_action(
+    action: Action, *, grounded: bool, previous_action: str | None, swimming: bool = False
+) -> Action:
     """Rearm A at a macro boundary, identically in execution and prediction."""
-    if action in JUMP_ACTIONS and grounded and previous_action in JUMP_ACTIONS:
+    if action in JUMP_ACTIONS and (grounded or swimming) and previous_action in JUMP_ACTIONS:
         return JUMP_RELEASE_ACTION[action]
     return action
 

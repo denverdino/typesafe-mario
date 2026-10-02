@@ -56,7 +56,7 @@ class TypeSafePolicy:
 
     def choose(self, snapshot: MarioSnapshot, actions: Sequence[Action]) -> Decision:
         prediction = snapshot.to_state().get("prediction")
-        if prediction and prediction.get("status") == "available":
+        if snapshot.swimming or (prediction and prediction.get("status") == "available"):
             return self._choose_with_forecast(snapshot, actions)
         # Filter only immediate requests. A future request can land before application.
         candidates = tuple(
@@ -491,7 +491,9 @@ class TypeSafePolicy:
                     "running jumps at the NEXT boundary. Both simulate release/repress. "
                     "Survived_horizon is conditional on that sequence, not proof that any later "
                     "choice is safe. Compare corresponding branches, not just the "
-                    "first cycle. Do not reject early braking because repeating LEFT forever "
+                    "first cycle. Airborne paths extend until landing within a bounded limit; "
+                    "unresolved flights have unknown risk. Do not treat falling toward a pit "
+                    "as safe forward progress. Do not reject early braking because repeating LEFT forever "
                     "is bad when LEFT then run_jump safely clears the enemy group.",
                     "priority": "Avoid predicted death or damage when another candidate has "
                     "a survivable continuation. Start the correction now even if collision "
@@ -502,7 +504,9 @@ class TypeSafePolicy:
                     "wait or retreat indefinitely if a forward route survives. If every "
                     "sampled continuation fails, these continuations are not exhaustive; "
                     "choose the action preserving the best escape opportunity using terrain "
-                    "and contact timing. Unknown/terminated is not safe.",
+                    "and contact timing. Unknown/terminated is not safe. A selection guard "
+                    "replaces a proposal only when all its branches are unsafe and another "
+                    "allowed action has a safe continuation, preferring your probabilities.",
                     "navigation": "Use terrain for route intent beyond the finite horizon. "
                     "At side_exit_pipe, descend to its entry floor and walk right into its "
                     "mouth; climbing its shaft does not advance. Plants cannot be stomped. "
@@ -547,6 +551,62 @@ class TypeSafePolicy:
                 criteria=["No predicted harm", "Threat requiring correction", "Imminent harm"],
             ),
         }
+        if snapshot.swimming:
+            # Water needs active vertical control even when airborne and falling.
+            # Keep this path available when native checkpoint support is absent.
+            instructions = questions["next_action"].instructions
+            instructions["question"] = (
+                "Swim through the current area alive, choosing both "
+                "forward movement and depth. Use committed_future as the application state."
+            )
+            instructions["continuations"] = (
+                "Each candidate lasts one cycle. repeat repeats it; run_jump switches to "
+                "RIGHT_RUN_JUMP at the next boundary. In water these A actions perform "
+                "repeated swim strokes: at each boundary held A is released for one frame "
+                "then pressed again, even while airborne or sinking. Both prediction and "
+                "execution use this rule. Surviving swimming does not require landing. "
+                "An unresolved descent remains unknown; compare all finite branch outcomes."
+            )
+            instructions["navigation"] = (
+                "player.swimming comes from the engine and can change at an area transition. "
+                "While swimming, use A strokes to gain/maintain height; release A to sink "
+                "under obstacles or align with an exit pipe. Holding A continuously is not "
+                "repeated swimming, so the controller rearms it at each cycle. NOOP and LEFT "
+                "also allow sinking: do not repeatedly retreat into a seabed opening or "
+                "whirlpool. Ground support, running takeoff, jump arcs, precision landings "
+                "and stomps are not requirements for a swimming route. Fish and bloobers "
+                "must be avoided vertically as well as horizontally. Prefer a safe forward "
+                "stroke route over waiting for a landing. Do not stay at the ceiling when "
+                "an obstacle or enemy requires descending. At side_exit_pipe release A, "
+                "descend to entry_standing_y, then press RIGHT into the mouth. After leaving "
+                "water, follow the land forecasts and continue toward the flag."
+            )
+            instructions["fallback"] = (
+                "If prediction.status is unavailable or prediction is absent, use current "
+                "enemy positions, terrain and vertical speed with the scheduled action delay. "
+                "No simulated safety evidence is available. Falling does not disable strokes."
+            )
+            descriptions = {
+                Action.NOOP: "Release A and direction; coast and sink. Not a hovering action.",
+                Action.RIGHT: "Swim right with A released; descend to pass below or enter a pipe.",
+                Action.RIGHT_RUN: "Move right with A released; also sinks. B does not supply lift.",
+                Action.RIGHT_JUMP: "Swim right and stroke upward; repeated cycles rearm A.",
+                Action.RIGHT_RUN_JUMP: "Swim right and stroke upward with B; repeated cycles rearm A.",
+                Action.JUMP: "Stroke upward without horizontal input; horizontal inertia remains.",
+                Action.LEFT: "Brake then swim left with A released; loses height while retreating.",
+            }
+            questions["next_action"].criteria = {a.value: descriptions[a] for a in candidates}
+            questions["jump_intent"].instructions = (
+                "Describe swimming input at application. start/hold requests an upward stroke "
+                "or repeated strokes, release descends, none needs no stroke. This diagnostic "
+                "does not control buttons. The controller rearms A while swimming."
+            )
+            questions["jump_intent"].criteria = {
+                "start": "Start an upward swimming stroke, even while sinking.",
+                "hold": "Continue repeated upward swimming strokes.",
+                "release": "Release A to descend deliberately.",
+                "none": "No swimming stroke needed.",
+            }
         return self._request(state, questions, candidates)
 
     def _request(

@@ -23,6 +23,7 @@ def _player(s: MarioSnapshot) -> dict[str, Any]:
         "height_y": s.y,
         "vx": s.horizontal_speed_exact if s.horizontal_speed_exact is not None else s.dx,
         "grounded": s.grounded,
+        "swimming": s.swimming,
         "jump_phase": s.jump_phase,
         "powerup_status": s.status,
     }
@@ -113,7 +114,11 @@ def _rollout(
     origin_level = (s.world, s.stage, s.area)
     wait_targets = {t.id for t in _nearby_plants(s)}
     wait_complete = continuation != "wait_for_clearance"
-    for offset in range(horizon):
+    # Do not label a fall safe merely because the death flag is one frame beyond
+    # the nominal horizon. Finish the current flight, with a bounded extension.
+    landing_resolved = False
+    swimming_resolved = False
+    for offset in range(horizon + 48):
         requested = action
         if offset >= cycle:
             requested = Action.RIGHT_RUN_JUMP
@@ -139,7 +144,12 @@ def _rollout(
                 else:
                     requested = Action.NOOP
         actual = (
-            first_frame_action(requested, grounded=s.grounded, previous_action=s.previous_action)
+            first_frame_action(
+                requested,
+                grounded=s.grounded,
+                previous_action=s.previous_action,
+                swimming=s.swimming,
+            )
             if offset % cycle == 0
             else requested
         )
@@ -200,10 +210,16 @@ def _rollout(
             )
         if offset + 1 == cycle:
             cycle_end_player = _player(s)
-        if frame % 4 == 0 or ended or offset + 1 == cycle or offset + 1 == horizon:
+        landing_resolved = offset + 1 >= horizon and s.grounded
+        # Swimming need not end on a floor. Still extend an unresolved descent:
+        # coasting into a seabed opening must not hide death just after the horizon.
+        swimming_resolved = offset + 1 >= horizon and s.swimming and s.dy >= 0 and s.y > 32
+        finished = ended or landing_resolved or swimming_resolved or offset + 1 == horizon + 48
+        if frame % 4 == 0 or finished or offset + 1 == cycle or offset + 1 == horizon:
             samples.append(_sample(frame, s, actual))
         if ended:
             terminal_frame = frame
+        if finished:
             break
     outcome = _outcome(s, ended)
     summary = {
@@ -221,11 +237,15 @@ def _rollout(
             "max_height_y": first_cycle_max_height,
         },
         "continuation_complete": wait_complete,
+        "landing_resolved": landing_resolved,
+        "swimming_resolved": swimming_resolved,
         "landings": landings,
         "events": events,
         "enemy_encounters": sorted(encounters.values(), key=lambda e: e["closest_frame"]),
     }
-    if not wait_complete and summary["risk"] == "safe":
+    if (
+        not wait_complete or (not ended and not (landing_resolved or swimming_resolved))
+    ) and summary["risk"] == "safe":
         summary["risk"] = "unknown"
     trace = {"action": action.value, "continuation": continuation, "samples": samples}
     return summary, trace
@@ -279,7 +299,10 @@ def forecast_actions(
                     Action(snapshot.scheduled_first_frame_action)
                     if (snapshot.scheduled_first_frame_action is not None)
                     else first_frame_action(
-                        action, grounded=s.grounded, previous_action=s.previous_action
+                        action,
+                        grounded=s.grounded,
+                        previous_action=s.previous_action,
+                        swimming=s.swimming,
                     )
                 )
             previous = s
@@ -355,11 +378,12 @@ def forecast_actions(
         prediction = {
             "status": "available",
             "backend": "native_checkpoint",
-            "version": 2,
+            "version": 4,
             "observation_frame": snapshot.frame_index,
             "application_frame": delay,
             "action_cycle_frames": cycle,
             "horizon_after_application_frames": horizon,
+            "airborne_extension_limit_frames": 48,
             "wait_horizon_limit_frames": 192,
             "assumptions": (
                 "Frame offsets start at observation. Native engine with privileged state, "
@@ -374,7 +398,13 @@ def forecast_actions(
                 "then run-jumps. It may use a longer horizon, capped at 192 frames; incomplete "
                 "waits are unknown. Events show phase changes; these are conditional plans, "
                 "not commitments to future actions. Re-evaluate at each actual cycle. "
-                "Safe means only surviving the stated finite button sequence without observed "
+                "Airborne paths extend up to 48 extra frames until landing or termination; "
+                "unresolved land flights are unknown, not safe. In water A actions rearm at "
+                "each cycle even without landing, producing repeated strokes. Swimming needs "
+                "no landing: a non-sinking endpoint above the bottom danger zone resolves it; "
+                "unresolved descents still extend and remain unknown unless resolved. "
+                "Safe means only surviving the "
+                "stated finite button sequence without observed "
                 "damage; it is not safety under arbitrary follow-up choices. Enemy distances "
                 "are sprite-origin references, not collision-box guarantees."
             ),
