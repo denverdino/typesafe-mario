@@ -52,6 +52,27 @@ def test_provider_cannot_return_an_action_outside_supplied_candidates():
         policy(Provider("left")).choose(MarioStateParser().parse({}), (Action.RIGHT,))
 
 
+def test_native_forecasts_keep_choices_and_provider_owns_selection():
+    from dataclasses import replace
+
+    provider = Provider("right_jump")
+    prediction = {
+        "status": "available",
+        "action_forecasts": [
+            {"action": "right_jump", "continuations": {"repeat": {"risk": "unsafe"}}}
+        ],
+    }
+    s = replace(MarioStateParser().parse({}), grounded=False, dy=-3, prediction=prediction)
+    decision = policy(provider).choose(s, tuple(Action))
+    assert decision.action == Action.RIGHT_JUMP  # Evidence informs; never overrides the model.
+    assert provider.request["state"]["prediction"] == prediction
+    assert set(provider.request["questions"]["next_action"].criteria) == {a.value for a in Action}
+    # The model must receive both continuation semantics and ordering of evidence.
+    guidance = provider.request["questions"]["next_action"].instructions
+    assert "action_forecasts" in str(guidance)
+    assert "run_jump" in str(guidance)
+
+
 def test_falling_offers_movement_choices_without_redundant_jump_buttons():
     from dataclasses import replace
 

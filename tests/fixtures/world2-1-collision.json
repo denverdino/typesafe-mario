@@ -1,0 +1,43 @@
+{
+  "env_id": "SuperMarioBros-2-1-v0",
+  "seed": 123,
+  "source": "run-20261002T003418.693920Z.jsonl, first episode",
+  "buttons": [
+    [
+      "right_run",
+      120
+    ],
+    [
+      "right_jump",
+      40
+    ],
+    [
+      "right",
+      1
+    ],
+    [
+      "right_jump",
+      55
+    ],
+    [
+      "left",
+      16
+    ],
+    [
+      "right_run_jump",
+      48
+    ],
+    [
+      "right_run",
+      1
+    ],
+    [
+      "right_run_jump",
+      47
+    ],
+    [
+      "left",
+      4
+    ]
+  ]
+}

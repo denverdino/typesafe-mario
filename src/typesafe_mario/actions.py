@@ -33,6 +33,13 @@ JUMP_RELEASE_ACTION: dict[Action, Action] = {
 }
 
 
+def first_frame_action(action: Action, *, grounded: bool, previous_action: str | None) -> Action:
+    """Rearm A at a macro boundary, identically in execution and prediction."""
+    if action in JUMP_ACTIONS and grounded and previous_action in JUMP_ACTIONS:
+        return JUMP_RELEASE_ACTION[action]
+    return action
+
+
 ACTION_DESCRIPTIONS: dict[Action, str] = {
     Action.NOOP: "Release all controls; coast. Only for deliberate waiting, not a rising jump.",
     Action.RIGHT: "Walk right for precision positioning; releases A and shortens a rising jump. Choose this when precision_target_cleared to land on the intermediate step. "

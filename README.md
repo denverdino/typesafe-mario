@@ -31,6 +31,82 @@ the same cycle semantics.
 NES emulator -> telemetry/RAM parser -> structured JSON -> Jev Choice -> controller input
 ```
 
+### Multi-enemy motion and candidate forecasts
+
+The parser tracks all five active enemy slots independently, including enemies
+behind or above Mario. `enemy_tracks` provides stable spawn identities, observed
+positions, floating-point velocities over up to eight frame intervals, motion
+phases and confidence. A newly seen enemy has unknown velocity. Inactive RAM
+slots are confirmed removals; missing RAM retains uncertain tracks for at most
+eight frames. Slot reuse, level transitions and discontinuities start new tracks.
+Positions use world x increasing right and screen y increasing down.
+
+Before each model request, the native checkpoint predictor simulates the already
+committed buttons, then every candidate action. Each candidate runs for one normal
+cycle and has two explicit continuations: `repeat` repeats the candidate, while
+`run_jump` uses forward running jumps from the next boundary. Each path covers
+48 frames after application (at least two full cycles for longer cadences).
+Recovery or a nearby springboard extends this to 96 frames and adds walking,
+release-then-jump, two-cycle repeat-then-jump and vertical-jump-then-run branches.
+The engine handles enemy turns, terrain, stomps and bounces; every encountered
+enemy participates. This backend uses privileged emulator state, including future
+spawns, rather than an observation-only physics model.
+
+The model receives `prediction.committed_future` and `action_forecasts`: finite
+outcomes, damage risk, closest enemy approaches and progress. Encounter rows share
+object definitions to keep expanded recovery requests within the model context.
+Full landing clearances and phase events remain in `debug_state.prediction_details`;
+sampled per-frame paths are retained in `debug_state.prediction_traces`.
+`safe` means the specified finite button sequence survived without observed damage;
+it says nothing about other follow-up actions. TypeSafe still chooses the actual
+action during normal progress. During a detected stall, the recovery selector can
+choose a forecast-safe alternative to an ineffective proposal, as described below.
+
+Prediction restores emulator, parser, reward and wrapper state before gameplay
+continues. It adds wall-clock computation but no gameplay frames or API calls.
+If a backend lacks native snapshots, forecasts are explicitly unavailable and the
+policy uses its previous observation-based guidance. Logs identify the predictor
+backend/version and record its compute time. Unexpected prediction errors restore
+the scene and terminate with `prediction_error` rather than continuing silently.
+
+### Timed interactions and recovery
+
+Plant tracks include the engine phase, remaining wait estimates and proximity
+conditions. A zero velocity can mean either an exposed pause or a hidden pause.
+For nearby exposed plants, `wait_for_clearance` forecasts releasing controls after
+the first candidate cycle, waiting until the plants are observed fully hidden and
+Mario is grounded, then run-jumping at a normal boundary. Its horizon adapts to the
+phase estimate, with a 192-frame cap. An incomplete wait is `unknown`, not `safe`.
+All other enemies remain simulated during the wait. Phase transitions and the
+wait-completion event are recorded in detailed forecasts; compact model summaries
+retain the wait-completion event and current tracks retain phase/timer information.
+
+`interactables` distinguishes springboards and side-entry pipes from hostile
+enemies. A spring is a place to land and launch from; a side-entry pipe requires
+alignment with the mouth and walking inside. Recovery is not tied to a level or
+fixed x coordinate. Its native forecasts compare temporary retreats, button
+releases, walking and jumping, including their later progress and maximum height.
+
+`recovery` records frames since the last meaningful four-pixel forward gain and
+recent per-action frame counts. After 48 frames without progress it activates,
+including repeated vertical jumps and small horizontal loops. A supported,
+deliberate wait beside an exposed plant is exempt for at most 192 frames. Progress
+and area changes reset the history, which is also preserved by checkpoints.
+
+When recovery is active, the selector first favors a forecast-safe alternative
+with substantially better progress. If the model repeats an over-tried action
+whose first cycle produces no new horizontal or vertical progress, it samples a
+different safe alternative,
+weighting the model probabilities and discounting recent attempts. Sampling uses
+repeatable state/frame seeds; it does not randomly choose known unsafe or unknown
+paths. With no forecast-safe alternative it retains the model proposal.
+Hypothetical height gained by a later jump cannot indefinitely justify idling now;
+an actual new height gain in the next cycle can preserve an ongoing spring launch.
+`selection` in decision logs records the original proposal, its confidence, the
+executed action and reason; `probabilities` remains the original model distribution.
+Each actual action still lasts one normal cycle, and recovery is re-evaluated at
+every decision rather than committing an uninterruptible long macro.
+
 The initial action set is intentionally small:
 
 - `noop`
@@ -169,6 +245,11 @@ Local grid (# solid, . empty, E enemy, M Mario):
 The structured object is canonical; the text view is only for debugging and UI.
 
 ## TypeSafe judgments
+
+The native-forecast path uses the interaction/recovery behavior described above.
+The detailed observation heuristics below remain as fallback guidance when native
+forecasts are unavailable; their model-only action selection also applies whenever
+the recovery selector has no forecast-safe alternative.
 
 Each request evaluates three independent judgments over the same state:
 

@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from .actions import ACTION_DESCRIPTIONS, JUMP_ACTIONS, Action
+from .recovery import recover_decision
 from .state import MarioSnapshot
 
 
@@ -19,6 +20,7 @@ class Decision:
     danger_score: float | None = None
     jump_intent: str | None = None
     jump_intent_probabilities: Mapping[str, float] = field(default_factory=dict)
+    selection: Mapping[str, Any] | None = None
 
 
 class Policy(Protocol):
@@ -53,6 +55,9 @@ class TypeSafePolicy:
         raise KeyError(f"TypeSafe response omitted {question_id!r}")
 
     def choose(self, snapshot: MarioSnapshot, actions: Sequence[Action]) -> Decision:
+        prediction = snapshot.to_state().get("prediction")
+        if prediction and prediction.get("status") == "available":
+            return self._choose_with_forecast(snapshot, actions)
         # Filter only immediate requests. A future request can land before application.
         candidates = tuple(
             action
@@ -337,9 +342,9 @@ class TypeSafePolicy:
                     "An exposed piranha plant occupies the pipe ahead. Choose an action to wait "
                     "safely beside the pipe until it fully retracts, then jump onto it."
                 )
-                questions["jump_intent"].instructions += (
-                    " Do not start a pipe jump while wait_before_pipe_jump is true; wait for hidden."
-                )
+                questions[
+                    "jump_intent"
+                ].instructions += " Do not start a pipe jump while wait_before_pipe_jump is true; wait for hidden."
             if any(p["wait_before_pipe_jump"] and p["distance_pixels"] <= 48 for p in pipe_plants):
                 normal = questions["next_action"].instructions
                 questions["next_action"].instructions = {
@@ -454,6 +459,99 @@ class TypeSafePolicy:
                 "right inside. Choose release if A is held, otherwise none. Do not start or "
                 "hold a jump to overcome the pipe shaft. Allow automatic entry to finish."
             )
+        return self._request(state, questions, candidates)
+
+    def _choose_with_forecast(self, snapshot: MarioSnapshot, actions: Sequence[Action]) -> Decision:
+        state = snapshot.to_state()
+        candidates = tuple(actions)
+        descriptions = {
+            Action.NOOP: "Release all buttons and coast; inertia remains.",
+            Action.RIGHT: "Move right with A released.",
+            Action.RIGHT_RUN: "Run right with A released.",
+            Action.RIGHT_JUMP: "Move right holding A.",
+            Action.RIGHT_RUN_JUMP: "Run right holding A.",
+            Action.JUMP: "Hold A without direction; horizontal inertia remains.",
+            Action.LEFT: "Brake rightward momentum, then move left; release A.",
+        }
+        questions = {
+            "next_action": self._Choice(
+                instructions={
+                    "question": "Choose the next controller action to reach the flag alive.",
+                    "timing": "prediction.committed_future is the state AFTER the already "
+                    "scheduled buttons finish. Your answer starts then and lasts exactly "
+                    "action_cycle_frames. All forecast frames are offsets from observation. "
+                    "You cannot change the committed prefix, even with a fast response.",
+                    "evidence": "Compare prediction.action_forecasts for ALL allowed actions. "
+                    "Native engine rollouts include acceleration/braking, jumps, walls, pits, "
+                    "all enemies, turns, stomps and subsequent bounces. Prefer these outcomes "
+                    "over legacy constant-velocity hazard flags or generic jump-continuity "
+                    "rules. A safe terrain surface only confirms support, not enemy clearance.",
+                    "continuations": "Each candidate lasts one cycle. The repeat branch repeats "
+                    "that candidate at subsequent boundaries; run_jump switches to forward "
+                    "running jumps at the NEXT boundary. Both simulate release/repress. "
+                    "Survived_horizon is conditional on that sequence, not proof that any later "
+                    "choice is safe. Compare corresponding branches, not just the "
+                    "first cycle. Do not reject early braking because repeating LEFT forever "
+                    "is bad when LEFT then run_jump safely clears the enemy group.",
+                    "priority": "Avoid predicted death or damage when another candidate has "
+                    "a survivable continuation. Start the correction now even if collision "
+                    "occurs several cycles later: late braking may be ineffective. Compare "
+                    "enemy_encounters rows (see encounter_columns and encounter_objects) ahead, behind and "
+                    "above; a stomp of the first enemy is not safety from the second. Among "
+                    "survivable routes prefer forward progress with useful clearance. Do not "
+                    "wait or retreat indefinitely if a forward route survives. If every "
+                    "sampled continuation fails, these continuations are not exhaustive; "
+                    "choose the action preserving the best escape opportunity using terrain "
+                    "and contact timing. Unknown/terminated is not safe.",
+                    "navigation": "Use terrain for route intent beyond the finite horizon. "
+                    "At side_exit_pipe, descend to its entry floor and walk right into its "
+                    "mouth; climbing its shaft does not advance. Plants cannot be stomped. "
+                    "Enemy origin distances are approximate references; native death/damage "
+                    "outcomes are stronger evidence than a distance threshold. Only your "
+                    "next_action controls the game; diagnostic answers do not change buttons.",
+                    "interactions": "interactables describes useful objects, not enemies. For "
+                    "a springboard below/beside Mario, land on its top and use its bounce to "
+                    "gain height. If running jumps hit a tall wall, briefly retreat or release "
+                    "horizontal input to align over the spring, then jump with the launch. "
+                    "Compare forecast max_height_y and forward progress over the longer path. "
+                    "For plants, zero velocity does not mean permanently stationary: compare "
+                    "plant phase/timer fields and wait_for_clearance. Wait only on supported "
+                    "ground, checking other enemies; resume when hidden, not just retracting.",
+                    "recovery": "When recovery.active is true, repeated actions have failed to "
+                    "make progress. Seek a different route or interaction, including temporary "
+                    "retreat, walking into a pipe, landing on a spring, or releasing A. Check "
+                    "action_frames to avoid the same ineffective attempts. A survivable loop "
+                    "with no progress is not a solution. Prefer a candidate whose forecast "
+                    "actually escapes; do not endlessly defer the useful action to a future "
+                    "continuation. The bounded recovery selector can sample a safe alternative "
+                    "to a repeated proposal and records the original proposal separately.",
+                },
+                criteria={a.value: descriptions[a] for a in candidates},
+            ),
+            "jump_intent": self._Choice(
+                instructions="Describe the desired jump input at prediction.committed_future, "
+                "using the action forecasts and terrain. This is an independent diagnostic, "
+                "not another controller. Grounded jump macros rearm held A for one frame.",
+                criteria={
+                    "start": "Start a grounded jump.",
+                    "hold": "Maintain jump ascent.",
+                    "release": "Release A to cut height or prepare takeoff.",
+                    "none": "No jump input needed.",
+                },
+            ),
+            "danger": self._Score(
+                instructions="Estimate danger of continuing current movement using committed_future "
+                "and the matching repeat action forecast. 0 means no predicted damage in the "
+                "finite horizon, 1 means an avoidable threat, 2 means imminent or committed "
+                "death/damage. This is a diagnostic risk score, not a probability.",
+                criteria=["No predicted harm", "Threat requiring correction", "Imminent harm"],
+            ),
+        }
+        return self._request(state, questions, candidates)
+
+    def _request(
+        self, state: dict[str, Any], questions: dict[str, Any], candidates: Sequence[Action]
+    ) -> Decision:
         started = time.perf_counter()
         response = self._client.system_one(state=state, questions=questions)
         latency_ms = (time.perf_counter() - started) * 1000
@@ -467,7 +565,7 @@ class TypeSafePolicy:
         probabilities = {
             str(key): float(value) for key, value in dict(action_answer.probabilities).items()
         }
-        return Decision(
+        decision = Decision(
             action=action,
             confidence=float(action_answer.confidence),
             probabilities=probabilities,
@@ -479,6 +577,7 @@ class TypeSafePolicy:
             jump_intent_probabilities=dict(jump_answer.probabilities),
             danger_score=float(danger_answer.score),
         )
+        return recover_decision(state, decision, tuple(candidates))
 
 
 class HeuristicPolicy:

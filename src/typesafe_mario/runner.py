@@ -8,10 +8,11 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from .actions import ACTION_TO_INDEX, JUMP_ACTIONS, JUMP_RELEASE_ACTION, Action
+from .actions import ACTION_TO_INDEX, Action, first_frame_action
 from .checkpoint import Checkpoint, checkpoint_from_log
 from .dashboard import DashboardCommand, LiveDashboard
 from .policy import Decision, Policy
+from .prediction import forecast_actions
 from .state import MarioSnapshot, MarioStateParser
 
 
@@ -88,6 +89,7 @@ class EpisodeLog:
             "state_text": observed.to_text(),
             "action": decision.action.value,
             "confidence": decision.confidence,
+            "selection": dict(decision.selection) if decision.selection is not None else None,
             "probabilities": dict(decision.probabilities),
             "jump_needed_probability": decision.jump_needed_probability,
             "jump_intent": decision.jump_intent,
@@ -153,9 +155,9 @@ def _end_reason(snapshot: MarioSnapshot, terminated: bool, truncated: bool) -> s
 
 
 def _first_frame_action(snapshot: MarioSnapshot, action: Action) -> Action:
-    if action in JUMP_ACTIONS and snapshot.grounded and snapshot.previous_action in JUMP_ACTIONS:
-        return JUMP_RELEASE_ACTION[action]
-    return action
+    return first_frame_action(
+        action, grounded=snapshot.grounded, previous_action=snapshot.previous_action
+    )
 
 
 def _advance_frame(
@@ -268,6 +270,11 @@ def _run_realtime_dashboard(
                 )
                 pending_index = next_index
                 pending_request_frame = recorder.total_frames
+                try:
+                    pending_snapshot = forecast_actions(env, parser, pending_snapshot, actions)
+                except Exception:
+                    recorder.end(snapshot, terminated, truncated, "prediction_error")
+                    raise
                 pending = executor.submit(policy.choose, pending_snapshot, actions)
                 next_index += 1
 
@@ -381,8 +388,10 @@ def run_episode(
         "frames_per_decision": frames_per_decision,
         "control_mode": "fixed_frame_lookahead",
         "policy": type(policy).__name__,
-        "prompt_version": 28,
-        "state_version": 21,
+        "prompt_version": 31,
+        "state_version": 24,
+        "prediction_backend": "native_checkpoint",
+        "prediction_version": 2,
         "landing_replan": False,
     }
     try:

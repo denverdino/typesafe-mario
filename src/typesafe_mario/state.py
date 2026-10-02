@@ -6,7 +6,9 @@ from math import ceil
 from typing import Any
 
 from .actions import JUMP_ACTIONS
+from .recovery import ProgressMemory
 from .terrain import is_support_tile, jump_reach_reference, landing_projection, navigation
+from .tracking import EnemyMeasurement, EnemyTrack, EnemyTracker
 
 ENEMY_NAMES: dict[int, str] = {
     0x00: "green_koopa",
@@ -19,7 +21,75 @@ ENEMY_NAMES: dict[int, str] = {
     0x12: "spiny",
     0x2D: "bowser",
     0x31: "flagpole",
+    0x32: "springboard",
 }
+
+
+def _model_prediction(prediction: dict[str, Any]) -> dict[str, Any]:
+    """Keep every candidate/outcome and encounter, with shared object definitions.
+
+    Full landing offsets, phase transitions and player details remain in debug logs.
+    In particular, adding recovery branches must not multiply these verbose records
+    until the provider's context limit is exceeded.
+    """
+    if prediction.get("backend") != "native_checkpoint":
+        return prediction
+    objects: list[dict[str, Any]] = []
+    indices: dict[str, int] = {}
+    forecasts = []
+    for forecast in prediction.get("action_forecasts", []):
+        branches = {}
+        first_cycle = {}
+        for name, branch in forecast["continuations"].items():
+            first_cycle = branch.get("first_cycle", {})
+            compact = {
+                k: branch[k]
+                for k in (
+                    "outcome",
+                    "risk",
+                    "evaluated_through_frame",
+                    "terminal_frame",
+                    "max_forward_progress_pixels",
+                    "max_height_y",
+                    "continuation_complete",
+                )
+                if k in branch and branch[k] is not None
+            }
+            compact["end_player"] = {
+                k: branch["end_player"][k] for k in ("x", "height_y", "grounded")
+            }
+            encounters = []
+            for encounter in branch["enemy_encounters"]:
+                identity = encounter["id"]
+                if identity not in indices:
+                    indices[identity] = len(objects)
+                    objects.append({k: encounter[k] for k in ("id", "kind", "role")})
+                encounters.append(
+                    [
+                        indices[identity],
+                        encounter["closest_frame"],
+                        encounter["dx"],
+                        encounter["dy"],
+                    ]
+                )
+            compact["enemy_encounters"] = encounters
+            # Repeated bounce/plant animation events are diagnostic detail. Preserve
+            # all damage, area changes and completed-wait events for decisions.
+            compact["events"] = [
+                e for e in branch["events"] if e["type"] not in {"plant_phase", "upward_bounce"}
+            ]
+            branches[name] = compact
+        forecasts.append(
+            {"action": forecast["action"], "first_cycle": first_cycle, "continuations": branches}
+        )
+    return {
+        **prediction,
+        "action_forecasts": forecasts,
+        "encounter_objects": objects,
+        "encounter_columns": ["object_index", "closest_frame", "dx", "dy"],
+        "detail_note": "All encounters retained as rows indexing encounter_objects. Full "
+        "landings, phase/bounce events and player states are in debug prediction_details.",
+    }
 
 
 @dataclass(frozen=True)
@@ -105,6 +175,53 @@ class MarioSnapshot:
     last_grounded_obstacle_height_tiles: int = 0
     horizontal_speed_exact: float | None = None
     side_exit_pipe: dict[str, Any] | None = None
+    enemy_tracks: tuple[EnemyTrack, ...] = field(default_factory=tuple)
+    prediction: dict[str, Any] | None = None
+    prediction_traces: tuple[dict[str, Any], ...] = field(default_factory=tuple)
+    recovery: dict[str, Any] = field(default_factory=dict)
+
+    def recovery_features(self) -> dict[str, Any]:
+        waiting = bool(
+            self.grounded
+            and abs(self.dx) <= 1
+            and self.previous_action in {"noop", "left"}
+            and self.recovery.get("no_progress_frames", 0) <= 192
+            and any(
+                e.kind == "piranha_plant"
+                and 0 <= e.dx_pixels <= 96
+                and (e.plant or {}).get("phase") in {"extended", "rising", "retracting"}
+                and self.y < (e.plant or {}).get("pipe_top_y", 0) + 16
+                for e in self.enemies
+            )
+        )
+        return {
+            **self.recovery,
+            "intentional_wait": waiting,
+            "active": bool(self.recovery.get("active") and not waiting),
+        }
+
+    def interactable_features(self) -> list[dict[str, Any]]:
+        objects = [
+            {
+                "id": t.id,
+                "kind": "springboard",
+                "target_center_x": t.measurement.x + 8,
+                "screen_y": t.measurement.y,
+                "interaction": "Land on top to bounce; time the jump input during compression "
+                "for extra height. A short retreat may be needed to align above it.",
+            }
+            for t in self.enemy_tracks
+            if t.observed and t.measurement.kind == "springboard"
+        ]
+        if self.side_exit_pipe:
+            objects.append(
+                {
+                    "kind": "side_exit_pipe",
+                    **self.side_exit_pipe,
+                    "interaction": "Descend to the entry floor, then walk right inside.",
+                }
+            )
+        return objects
 
     def navigation_features(self) -> dict[str, Any]:
         return navigation(
@@ -134,6 +251,8 @@ class MarioSnapshot:
             # Assume enemy vertical position stays fixed over this short descending
             # horizon. This is separate from current-frame vertical collision tests.
             for enemy in self.enemies:
+                if enemy.kind in {"springboard", "flagpole"}:
+                    continue
                 relative_x = enemy.dx_pixels + enemy.relative_velocity_x * frames
                 relative_y = enemy.dy_pixels + projection["standing_y"] - self.y
                 if abs(relative_x) <= 16 and abs(relative_y) <= 16:
@@ -154,7 +273,10 @@ class MarioSnapshot:
             "landing_collision_predicted": bool(threats),
             "landing_threat_from_behind": any(t["current_distance_pixels"] <= 0 for t in threats),
             "rear_contact_imminent": any(
-                -16 <= e.dx_pixels < 0 and abs(e.dy_pixels) <= 16 for e in self.enemies
+                -16 <= e.dx_pixels < 0
+                and abs(e.dy_pixels) <= 16
+                and e.kind not in {"springboard", "flagpole"}
+                for e in self.enemies
             ),
             "landing_threats": threats,
             "landing_braking_supported": braking_supported,
@@ -171,6 +293,8 @@ class MarioSnapshot:
         surfaces = self.navigation_features()["landing_surfaces"]
         threats = []
         for enemy in self.enemies:
+            if enemy.kind in {"springboard", "flagpole"}:
+                continue
             if not -128 <= enemy.dy_pixels < -16:
                 continue
             # A falling enemy already below us at application can be stomped;
@@ -235,7 +359,11 @@ class MarioSnapshot:
         if plants:
             landing_threats["pipe_plants"] = plants
         enemies_ahead = sorted(
-            (enemy for enemy in self.enemies if enemy.dx_pixels >= 0),
+            (
+                enemy
+                for enemy in self.enemies
+                if enemy.dx_pixels >= 0 and enemy.kind not in {"springboard", "flagpole"}
+            ),
             key=lambda enemy: enemy.dx_pixels,
         )
         if not enemies_ahead:
@@ -580,6 +708,15 @@ class MarioSnapshot:
                 "landing_projection": self.landing_features(),
             },
             "hazard": self.threat_features(),
+            "enemy_tracks": [track.to_state() for track in self.enemy_tracks],
+            "enemy_coordinates": "world x rightward; screen y downward; pixels/frame",
+            "interactables": self.interactable_features(),
+            "recovery": self.recovery_features(),
+            **(
+                {"prediction": _model_prediction(self.prediction)}
+                if self.prediction is not None
+                else {}
+            ),
             "terrain": terrain,
             "reaction_timing": {
                 "action_horizon_frames": self.decision_horizon_frames,
@@ -635,6 +772,8 @@ class MarioSnapshot:
                 "vertical_motion": self.vertical_motion,
             },
             "visible_enemies": [enemy.to_state() for enemy in self.enemies],
+            "prediction_traces": list(self.prediction_traces),
+            "prediction_details": self.prediction,
             "local_grid": {
                 "legend": {".": "empty", "#": "solid", "E": "enemy", "M": "mario"},
                 "orientation": "Mario is at M; columns run left-to-right and rows top-to-bottom.",
@@ -701,6 +840,8 @@ class MarioStateParser:
         self._stalled_steps = 0
         self._last_enemy_dx: dict[int, int] = {}
         self._last_enemy_vertical: dict[int, tuple[int, int, int]] = {}
+        self._enemy_tracker = EnemyTracker()
+        self._progress_memory = ProgressMemory()
         self._tracked_action: str | None = None
         self._action_start_x = 0
         self._action_frames = 0
@@ -716,10 +857,12 @@ class MarioStateParser:
 
     def reset(self) -> None:
         """Clear episode history while preserving the configured objective."""
+        epoch = self._enemy_tracker.epoch + 1
         self.__init__(
             goal=self.goal,
             decision_horizon_frames=self.decision_horizon_frames,
         )
+        self._enemy_tracker.epoch = epoch
 
     @staticmethod
     def _integer(info: Mapping[str, Any], key: str, default: int = 0) -> int:
@@ -777,6 +920,30 @@ class MarioStateParser:
             self._stalled_steps = 0
 
         enemies = self._extract_enemies(info, ram, x, screen_y)
+        level = tuple(self._integer(info, key, 1) for key in ("world", "stage", "area"))
+        measurements = None
+        if ram is not None and len(ram) > 0xD3:
+            measurements = [
+                EnemyMeasurement(
+                    slot,
+                    int(ram[0x16 + slot]),
+                    ENEMY_NAMES.get(int(ram[0x16 + slot]), f"enemy_0x{int(ram[0x16 + slot]):02x}"),
+                    int(ram[0x6E + slot]) * 256 + int(ram[0x87 + slot]),
+                    int(ram[0xCF + slot]),
+                    int(ram[0x1E + slot]),
+                    self._plant_state(
+                        ram,
+                        slot,
+                        int(ram[0xCF + slot]),
+                        int(ram[0x6E + slot]) * 256 + int(ram[0x87 + slot]) - x,
+                    )
+                    if int(ram[0x16 + slot]) == 0x0D
+                    else None,
+                )
+                for slot in range(5)
+                if ram[0xF + slot]
+            ]
+        enemy_tracks = self._enemy_tracker.update(self._frame_index, level, measurements)
         grid = self._extract_local_grid(ram, x, screen_y, enemies)
         support_below = self._has_support_below(grid)
         grounded = abs(dy) <= 1 and support_below
@@ -843,6 +1010,8 @@ class MarioStateParser:
             best_progress=self._best_x,
             stalled_steps=self._stalled_steps,
             enemies=tuple(enemies),
+            enemy_tracks=enemy_tracks,
+            recovery=self._progress_memory.update(self._frame_index, level, x, y, previous_action),
             local_grid=tuple(grid),
             collision_grid=tuple(self._extract_collision_grid(ram, x)),
             side_exit_pipe=self._extract_side_exit_pipe(ram, x),

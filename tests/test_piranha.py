@@ -19,6 +19,27 @@ def test_piranha_id_and_extended_phase_are_identified_from_ram():
     assert e.plant["emergence_suppressed_by_proximity"] is False
 
 
+def test_track_preserves_phase_and_wait_timer_even_at_zero_velocity():
+    track = plant_frame().to_state()["enemy_tracks"][0]
+    assert track.get("plant", {}).get("phase") == "extended"
+    assert track["plant"]["estimated_frames_until_hidden"] == 88
+
+
+def test_springboard_is_an_interactable_not_a_hostile_enemy():
+    s = plant_frame(kind=0x32)
+    state = s.to_state()
+    assert s.enemies[0].kind == "springboard"
+    assert not state["hazard"]["enemy_ahead"]
+    assert state["interactables"][0]["kind"] == "springboard"
+    assert state["interactables"][0]["target_center_x"] == 160
+    rear = replace(s, enemies=(replace(s.enemies[0], dx_pixels=-8, dy_pixels=0),))
+    assert not rear.threat_features()["rear_contact_imminent"]
+    overhead = replace(
+        s, enemies=(replace(s.enemies[0], dx_pixels=0, dy_pixels=-40, vertical_velocity_y=3),)
+    )
+    assert overhead.threat_features()["overhead_threats"] == []
+
+
 def test_retracting_is_not_hidden_even_when_current_frame_has_no_vertical_movement():
     s = plant_frame(y=148, speed=1, moving=1, timer=0)
     assert s.enemies[0].vertical_velocity_y is None
