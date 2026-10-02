@@ -6,6 +6,7 @@ surviving a finite path is not a guarantee about a different future action seque
 """
 
 from collections.abc import Sequence
+from copy import deepcopy
 from dataclasses import replace
 from math import hypot
 from time import perf_counter
@@ -13,7 +14,18 @@ from typing import Any
 
 from .actions import ACTION_TO_INDEX, Action, first_frame_action
 from .checkpoint import Checkpoint
+from .routing import pipe_entry_geometry, staging_geometry
 from .state import MarioSnapshot, MarioStateParser
+
+# These pairs request identical buttons at every cycle, including A rearming.
+# Reuse only within one candidate/application state and the same fixed horizon.
+# Conditional waits and staging routes deliberately remain separate simulations.
+_IDENTICAL_CONTINUATIONS = {
+    (Action.RIGHT_RUN_JUMP, "run_jump"): "repeat",
+    (Action.RIGHT_RUN_JUMP, "repeat_twice_then_jump"): "repeat",
+    (Action.RIGHT, "walk"): "repeat",
+    (Action.NOOP, "repeat_twice_then_jump"): "release_then_jump",
+}
 
 
 def _player(s: MarioSnapshot) -> dict[str, Any]:
@@ -49,10 +61,16 @@ def _sample(frame: int, s: MarioSnapshot, action: Action | None) -> dict[str, An
     }
 
 
-def _step(env: Any, parser: MarioStateParser, action: Action) -> tuple[MarioSnapshot, bool]:
+def _step(
+    env: Any, parser: MarioStateParser, action: Action, *, include_geometry: bool = False
+) -> tuple[MarioSnapshot, bool]:
     _, reward, terminated, truncated, info = env.step(ACTION_TO_INDEX[action])
     s = parser.parse(
-        info, env.unwrapped.ram, previous_action=action.value, previous_reward=float(reward)
+        info,
+        env.unwrapped.ram,
+        previous_action=action.value,
+        previous_reward=float(reward),
+        include_geometry=include_geometry,
     )
     return s, bool(terminated or truncated or s.dead or s.clear)
 
@@ -101,6 +119,8 @@ def _rollout(
     delay: int,
     cycle: int,
     horizon: int,
+    brake_cycles: int | None = None,
+    route_goal: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     encounters: dict[str, dict[str, Any]] = {}
     landings, events = [], []
@@ -118,9 +138,21 @@ def _rollout(
     # the nominal horizon. Finish the current flight, with a bounded extension.
     landing_resolved = False
     swimming_resolved = False
+    staging_landed = False
+    obstacle_mounted = False
+    route_clear_frame = None
+    pipe_route = route_goal is not None and route_goal.get("kind") == "side_exit_pipe"
     for offset in range(horizon + 48):
         requested = action
-        if offset >= cycle:
+        if brake_cycles is not None:
+            requested = (
+                Action.LEFT
+                if offset < brake_cycles * cycle
+                else Action.RIGHT
+                if pipe_route
+                else Action.RIGHT_RUN_JUMP
+            )
+        elif offset >= cycle:
             requested = Action.RIGHT_RUN_JUMP
             if continuation == "repeat" or (
                 continuation == "repeat_twice_then_jump" and offset < 2 * cycle
@@ -156,6 +188,23 @@ def _rollout(
         previous = s
         s, ended = _step(env, parser, actual)
         frame = delay + offset + 1
+        if pipe_route and (s.world, s.stage, s.area) == origin_level:
+            if route_clear_frame is None and s.player_state == 2:
+                route_clear_frame = frame
+        elif route_goal is not None and (s.world, s.stage, s.area) == origin_level:
+            staging_landed |= s.grounded and any(
+                t["start_x"] <= s.x + 8 <= t["end_x"] and s.y == t["standing_y"]
+                for t in route_goal["staging_surfaces"]
+            )
+            obstacle_mounted |= (
+                s.x >= route_goal["obstacle_start_x"] and s.y >= route_goal["obstacle_standing_y"]
+            )
+            if (
+                route_clear_frame is None
+                and obstacle_mounted
+                and s.x >= route_goal["obstacle_end_x"] + 8
+            ):
+                route_clear_frame = frame
         if (s.world, s.stage, s.area) == origin_level:
             max_x, max_height = max(max_x, s.x), max(max_height, s.y)
             if offset < cycle:
@@ -247,6 +296,23 @@ def _rollout(
         not wait_complete or (not ended and not (landing_resolved or swimming_resolved))
     ) and summary["risk"] == "safe":
         summary["risk"] = "unknown"
+    if route_goal is not None:
+        summary["route"] = {
+            "brake_cycles": brake_cycles,
+            "clear_frame": route_clear_frame,
+        }
+        if pipe_route:
+            summary["route"].update(
+                mouth_x=route_goal["mouth_x"],
+                pipe_entered=route_clear_frame is not None,
+            )
+        else:
+            summary["route"].update(
+                obstacle_start_x=route_goal["obstacle_start_x"],
+                obstacle_end_x=route_goal["obstacle_end_x"],
+                staging_landed=staging_landed,
+                obstacle_cleared=route_clear_frame is not None,
+            )
     trace = {"action": action.value, "continuation": continuation, "samples": samples}
     return summary, trace
 
@@ -306,7 +372,7 @@ def forecast_actions(
                     )
                 )
             previous = s
-            s, ended = _step(env, simulated_parser, action)
+            s, ended = _step(env, simulated_parser, action, include_geometry=True)
             prefix_events.extend(_phase_events(previous, s, offset + 1))
             if previous.status != s.status:
                 prefix_events.append(
@@ -332,6 +398,8 @@ def forecast_actions(
         traces.append({"phase": "committed", "samples": prefix})
         if not ended:
             application = Checkpoint.capture(env, simulated_parser, s)
+            route_goal = staging_geometry(s) or pipe_entry_geometry(s)
+            entry_route = bool(route_goal and route_goal.get("kind") == "side_exit_pipe")
             continuations = ["repeat", "run_jump"]
             if recovery or spring_nearby:
                 continuations += [
@@ -360,31 +428,71 @@ def forecast_actions(
                 )
             for action in actions:
                 branches = {}
+                simulated = {}
                 for continuation in continuations:
+                    equivalent = _IDENTICAL_CONTINUATIONS.get((action, continuation))
+                    if equivalent in simulated:
+                        summary, trace = deepcopy(simulated[equivalent])
+                        trace["continuation"] = continuation
+                    else:
+                        _, branch_parser, branch_snapshot = application.restore(env)
+                        summary, trace = _rollout(
+                            env,
+                            branch_parser,
+                            branch_snapshot,
+                            action,
+                            continuation,
+                            delay=delay,
+                            cycle=cycle,
+                            horizon=wait_horizon
+                            if continuation == "wait_for_clearance"
+                            else horizon,
+                        )
+                    simulated[continuation] = summary, trace
+                    branches[continuation] = summary
+                    traces.append(trace)
+                # Sample sustained braking, not just one cycle then an immediate
+                # forward jump. Restrict this extra search to staging geometry.
+                route_lengths = (
+                    (
+                        range(1, 7)
+                        if action == Action.LEFT
+                        else (0,)
+                        if action == (Action.RIGHT if entry_route else Action.RIGHT_RUN_JUMP)
+                        else ()
+                    )
+                    if route_goal
+                    else ()
+                )
+                for braking in route_lengths:
                     _, branch_parser, branch_snapshot = application.restore(env)
+                    name = f"{'entry' if entry_route else 'staging'}_brake_{braking}"
                     summary, trace = _rollout(
                         env,
                         branch_parser,
                         branch_snapshot,
                         action,
-                        continuation,
+                        name,
                         delay=delay,
                         cycle=cycle,
-                        horizon=wait_horizon if continuation == "wait_for_clearance" else horizon,
+                        horizon=max(128, (braking + 12) * cycle),
+                        brake_cycles=braking,
+                        route_goal=route_goal,
                     )
-                    branches[continuation] = summary
+                    branches[name] = summary
                     traces.append(trace)
                 forecasts.append({"action": action.value, "continuations": branches})
         prediction = {
             "status": "available",
             "backend": "native_checkpoint",
-            "version": 4,
+            "version": 5,
             "observation_frame": snapshot.frame_index,
             "application_frame": delay,
             "action_cycle_frames": cycle,
             "horizon_after_application_frames": horizon,
             "airborne_extension_limit_frames": 48,
             "wait_horizon_limit_frames": 192,
+            "staging_brake_limit_cycles": 6,
             "assumptions": (
                 "Frame offsets start at observation. Native engine with privileged state, "
                 "including future spawns. Candidates start AFTER committed_future. Each lasts "
@@ -398,6 +506,13 @@ def forecast_actions(
                 "then run-jumps. It may use a longer horizon, capped at 192 frames; incomplete "
                 "waits are unknown. Events show phase changes; these are conditional plans, "
                 "not commitments to future actions. Re-evaluate at each actual cycle. "
+                "When tall-obstacle staging geometry is present, staging_brake_N holds LEFT "
+                "for N cycles then uses running jumps (N=0 starts running jumps immediately). "
+                "These routes cover at least 128 frames and N+12 cycles, plus the airborne "
+                "extension. Route evidence records intermediate landings and actual obstacle "
+                "clearance; a high arc alone is not clearance. "
+                "At dry sideways exits, entry_brake_N instead follows braking with RIGHT "
+                "without A and records actual pipe-entry animation. "
                 "Airborne paths extend up to 48 extra frames until landing or termination; "
                 "unresolved land flights are unknown, not safe. In water A actions rearm at "
                 "each cycle even without landing, producing repeated strokes. Swimming needs "

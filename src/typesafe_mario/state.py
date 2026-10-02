@@ -7,6 +7,7 @@ from typing import Any
 
 from .actions import JUMP_ACTIONS
 from .recovery import ProgressMemory
+from .routing import staging_geometry
 from .terrain import is_support_tile, jump_reach_reference, landing_projection, navigation
 from .tracking import EnemyMeasurement, EnemyTrack, EnemyTracker
 
@@ -53,6 +54,7 @@ def _model_prediction(prediction: dict[str, Any]) -> dict[str, Any]:
                     "max_height_y",
                     "continuation_complete",
                     "landing_resolved",
+                    "route",
                 )
                 if k in branch and branch[k] is not None
             }
@@ -638,6 +640,9 @@ class MarioSnapshot:
 
     def to_state(self) -> dict[str, Any]:
         terrain = self.navigation_features()
+        staging = staging_geometry(self)
+        if staging is not None:
+            terrain["staging_route"] = staging
         stair_approach = self.stair_approach_features()
         if stair_approach is not None:
             terrain["stair_approach"] = stair_approach
@@ -929,8 +934,11 @@ class MarioStateParser:
         previous_reward: float = 0.0,
         previous_latency_ms: float = 0.0,
         previous_response_delay_frames: int | None = None,
+        include_geometry: bool = True,
     ) -> MarioSnapshot:
         # Call once at reset, then once per emulator frame in every runner mode.
+        # Rollout-only parsers may omit derived terrain: native engine collisions
+        # still run on every frame. Do not reuse those parsers for live control.
         self._frame_index += 1
         x = self._integer(info, "x_pos", self._integer(info, "progress"))
         y = self._integer(info, "y_pos", self._integer(info, "y_pixel"))
@@ -989,10 +997,15 @@ class MarioStateParser:
                 if ram[0xF + slot]
             ]
         enemy_tracks = self._enemy_tracker.update(self._frame_index, level, measurements)
-        grid = self._extract_local_grid(ram, x, screen_y, enemies)
+        native_grounded = ram is not None and len(ram) > 0x001D
+        grid = (
+            self._extract_local_grid(ram, x, screen_y, enemies)
+            if include_geometry or not native_grounded
+            else []
+        )
         support_below = self._has_support_below(grid)
         grounded = abs(dy) <= 1 and support_below
-        if ram is not None and len(ram) > 0x001D:
+        if native_grounded:
             grounded = (
                 self._ram_byte(ram, 0x001D) == 0
                 and self._integer(info, "player_state", 8) == 8
@@ -1061,8 +1074,8 @@ class MarioStateParser:
             enemy_tracks=enemy_tracks,
             recovery=self._progress_memory.update(self._frame_index, level, x, y, previous_action),
             local_grid=tuple(grid),
-            collision_grid=tuple(self._extract_collision_grid(ram, x)),
-            side_exit_pipe=self._extract_side_exit_pipe(ram, x),
+            collision_grid=tuple(self._extract_collision_grid(ram, x)) if include_geometry else (),
+            side_exit_pipe=self._extract_side_exit_pipe(ram, x) if include_geometry else None,
             screen_y=screen_y,
             frame_index=self._frame_index,
             preview_frame=self._preview_frame,
@@ -1098,8 +1111,8 @@ class MarioStateParser:
                 else None
             ),
         )
-        navigation = snapshot.navigation_features()
-        if grounded:
+        if include_geometry and grounded:
+            navigation = snapshot.navigation_features()
             gap_start = navigation.get("gap_start_x")
             candidates = [
                 surface

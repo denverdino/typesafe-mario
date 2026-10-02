@@ -49,6 +49,68 @@ def forecast(*args, **kwargs):
     return forecast_actions(*args, **kwargs)
 
 
+def test_rollouts_skip_unused_geometry_without_changing_forecasts(scene, monkeypatch):
+    env, p, s = scene
+    original_grid = MarioStateParser._extract_collision_grid
+    scans = []
+
+    def counted_grid(self, ram, x):
+        scans.append(x)
+        return original_grid(self, ram, x)
+
+    monkeypatch.setattr(MarioStateParser, "_extract_collision_grid", counted_grid)
+    result = forecast(env, p, s, tuple(Action))
+    # Only committed frames need terrain for selecting routes at application.
+    # Candidate rollouts use native collisions, motion and tracked actors.
+    assert len(scans) <= 8
+    parse = MarioStateParser.parse
+
+    def full_parse(self, *args, **kwargs):
+        kwargs["include_geometry"] = True
+        return parse(self, *args, **kwargs)
+
+    monkeypatch.setattr(MarioStateParser, "parse", full_parse)
+    reference = forecast(env, p, s, tuple(Action))
+    actual = {k: v for k, v in result.prediction.items() if k != "compute_ms"}
+    expected = {k: v for k, v in reference.prediction.items() if k != "compute_ms"}
+    assert actual == expected
+    assert result.prediction_traces == reference.prediction_traces
+
+
+@pytest.mark.parametrize("recovery", [False, True])
+def test_identical_action_sequences_share_simulation_but_keep_all_branches(
+    scene, monkeypatch, recovery
+):
+    env, p, s = scene
+    s = replace(
+        s,
+        frames_until_action=0,
+        recovery={"active": recovery, "no_progress_frames": 200},
+    )
+    steps = []
+    original_step = env.step
+
+    def counted_step(action):
+        steps.append(action)
+        return original_step(action)
+
+    monkeypatch.setattr(env, "step", counted_step)
+    result = forecast(env, p, s, (Action.RIGHT_RUN_JUMP,))
+    branches = result.prediction["action_forecasts"][0]["continuations"]
+    names = {"repeat", "run_jump"}
+    if recovery:
+        names |= {"walk", "release_then_jump", "repeat_twice_then_jump", "hold_jump_then_run"}
+    assert set(branches) == names
+    assert branches["repeat"] == branches["run_jump"]
+    if recovery:
+        assert branches["repeat"] == branches["repeat_twice_then_jump"]
+    assert {t["continuation"] for t in result.prediction_traces[1:]} == names
+    assert len(steps) < sum(b["evaluated_through_frame"] for b in branches.values())
+    # Consumers must not be able to change another branch through shared dicts.
+    branches["repeat"]["end_player"]["x"] = -100
+    assert branches["run_jump"]["end_player"]["x"] != -100
+
+
 def test_forecasts_show_collision_and_early_braking_across_multiple_enemies(scene):
     env, p, s = scene
     result = forecast(env, p, s, (Action.RIGHT_RUN_JUMP, Action.LEFT))

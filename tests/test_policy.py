@@ -36,6 +36,34 @@ def policy(provider):
     return p
 
 
+def test_latency_only_measures_api_excluding_state_and_recovery(monkeypatch):
+    from typesafe_mario import policy as policy_module
+    from typesafe_mario.state import MarioSnapshot
+
+    clock = [0.0]
+    to_state = MarioSnapshot.to_state
+    recover = policy_module.recover_decision
+
+    def timed_state(self):
+        clock[0] += 5
+        return to_state(self)
+
+    def timed_recovery(*args):
+        clock[0] += 7
+        return recover(*args)
+
+    class TimedProvider(Provider):
+        def system_one(self, **request):
+            clock[0] += 0.25
+            return super().system_one(**request)
+
+    monkeypatch.setattr(MarioSnapshot, "to_state", timed_state)
+    monkeypatch.setattr(policy_module, "recover_decision", timed_recovery)
+    monkeypatch.setattr(policy_module.time, "perf_counter", lambda: clock[0])
+    result = policy(TimedProvider()).choose(MarioStateParser().parse({}), tuple(Action))
+    assert result.latency_ms == 250
+
+
 def test_jump_intent_is_parsed_without_overriding_controller_choice():
     provider = Provider()
     snapshot = MarioStateParser(decision_horizon_frames=3).parse({"x_pos": 100})

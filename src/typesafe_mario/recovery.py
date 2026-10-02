@@ -6,6 +6,7 @@ from random import Random
 from typing import TYPE_CHECKING, Any
 
 from .actions import Action
+from .routing import select_staging_route
 
 if TYPE_CHECKING:
     from .policy import Decision
@@ -21,7 +22,14 @@ class ProgressMemory:
     def update(
         self, frame: int, level: tuple[int, int, int], x: int, y: int, action: str | None
     ) -> dict[str, Any]:
-        if level != self.level or x >= self.anchor_x + 4:
+        # Wrapping past the left edge can report x=65535; castle warps can
+        # also move backwards without changing the area. Neither is a stall.
+        # Compare adjacent observations, so sustained ordinary retreat still
+        # counts as no progress. Allow ample motion per elapsed emulator frame.
+        discontinuity = bool(
+            self.history and abs(x - self.history[-1][1]) > 32 * max(1, frame - self.history[-1][0])
+        )
+        if level != self.level or discontinuity or x >= self.anchor_x + 4:
             self.level, self.anchor_x, self.progress_frame = level, x, frame
             self.history.clear()
         self.history.append((frame, x, y, action))
@@ -40,6 +48,9 @@ class ProgressMemory:
 def recover_decision(
     state: dict[str, Any], decision: "Decision", actions: tuple[Action, ...]
 ) -> "Decision":
+    route = select_staging_route(state, decision, actions)
+    if route is not None:
+        return route
     prediction = state.get("prediction", {})
     forecasts = {f["action"]: f for f in prediction.get("action_forecasts", [])}
     proposed = forecasts.get(decision.action.value, {}).get("continuations", {})
@@ -87,7 +98,11 @@ def recover_decision(
         action = Action(forecast["action"])
         if action not in actions:
             continue
-        safe = [b for b in forecast["continuations"].values() if b.get("risk") == "safe"]
+        safe = [
+            b
+            for b in forecast["continuations"].values()
+            if b.get("risk") == "safe" and b.get("continuation_complete", True)
+        ]
         if not safe:
             continue
         if action == decision.action:
@@ -100,8 +115,22 @@ def recover_decision(
         def utility(branch):
             if branch.get("outcome") == "stage_clear":
                 return 10000
-            advance = branch.get("max_forward_progress_pixels", branch.get("progress_pixels", 0))
-            height = max(0, branch.get("max_height_y", 0) - recovery.get("recent_max_height", 0))
+            player = state.get("player", {})
+            origin_x = (
+                prediction.get("committed_future", {})
+                .get("player", {})
+                .get("x", player.get("x", recovery.get("anchor_x", 0)))
+            )
+            advance = max(
+                0,
+                origin_x
+                + branch.get("max_forward_progress_pixels", branch.get("progress_pixels", 0))
+                - recovery.get("anchor_x", origin_x),
+            )
+            end = branch.get("end_player", {})
+            height = (
+                max(0, end.get("height_y", 0) - player.get("y", 0)) if end.get("grounded") else 0
+            )
             transition = any(e["type"] == "area_transition" for e in branch.get("events", []))
             return advance + min(32, height / 2) + 64 * transition
 

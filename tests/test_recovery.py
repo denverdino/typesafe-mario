@@ -1,6 +1,35 @@
 from collections import Counter
 
+import pytest
+
 from typesafe_mario.state import MarioStateParser
+
+
+@pytest.mark.parametrize("positions", [(2, 65535, 65528, 8), (900, 902, 0, 8)])
+def test_coordinate_wrap_or_same_area_warp_rebases_progress(positions):
+    p = MarioStateParser()
+    for x in positions:
+        p.parse({"x_pos": x, "y_pos": 79})
+    for x in range(9, 210):
+        s = p.parse({"x_pos": x, "y_pos": 79})
+    recovery = s.to_state()["recovery"]
+    assert not recovery["active"]
+    assert 205 <= recovery["anchor_x"] <= 209
+    assert recovery["no_progress_frames"] < 4
+    # A real stall after the rebase must still activate recovery.
+    for _ in range(60):
+        s = p.parse({"x_pos": 209, "y_pos": 79})
+    assert s.to_state()["recovery"]["active"]
+
+
+def test_gradual_retreat_does_not_reset_stall_deadline():
+    p = MarioStateParser()
+    for x in range(500, 299, -2):
+        s = p.parse({"x_pos": x, "y_pos": 79}, previous_action="left")
+    recovery = s.to_state()["recovery"]
+    assert recovery["active"]
+    assert recovery["anchor_x"] == 500
+    assert recovery["no_progress_frames"] == 100
 
 
 def test_repeated_jumps_and_small_horizontal_oscillation_trigger_recovery():

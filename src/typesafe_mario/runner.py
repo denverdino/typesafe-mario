@@ -391,10 +391,10 @@ def run_episode(
         "frames_per_decision": frames_per_decision,
         "control_mode": "fixed_frame_lookahead",
         "policy": type(policy).__name__,
-        "prompt_version": 33,
-        "state_version": 26,
+        "prompt_version": 34,
+        "state_version": 27,
         "prediction_backend": "native_checkpoint",
-        "prediction_version": 4,
+        "prediction_version": 5,
         "landing_replan": False,
     }
     try:

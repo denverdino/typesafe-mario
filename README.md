@@ -78,6 +78,47 @@ policy uses its previous observation-based guidance. Logs identify the predictor
 backend/version and record its compute time. Unexpected prediction errors restore
 the scene and terminate with `prediction_error` rather than continuing silently.
 
+Candidate rollouts omit derived terrain grids and navigation hints that their
+summaries do not consume; native collisions, actor tracking, damage, landing and
+termination checks still run every frame. Committed frames retain full parsing
+for route selection. Identical fixed button sequences within a candidate share
+one simulation while preserving separate branch summaries and debug traces.
+The dashboard `Latency` and log `latency_ms` remain API-call duration only;
+local prediction time is recorded separately in `prediction.compute_ms`.
+
+### Intermediate landings before tall obstacles
+
+`terrain.staging_route` identifies a tall obstacle with raised approach surfaces,
+even when there is no nearby gap. Geometry proposes useful footholds; native
+simulation determines whether a route actually clears the obstacle safely.
+Near these configurations the predictor additionally samples `staging_brake_N`:
+LEFT for 1–6 complete cycles followed by running jumps, plus immediate running
+jumps (`N=0`). These branches cover at least 128 frames and N+12 cycles, with the
+same bounded airborne extension. They include actual intermediate landings and
+obstacle clearance, not just the highest point of an attempted jump.
+
+A safe, complete route that crosses the obstacle takes priority over a locally
+safe loop. `selection.mode=staging_route` records the proposed action, selected
+action and route. The entire route is re-evaluated from the committed application
+state at every decision; successful multi-cycle braking is not interrupted merely
+for action diversity. If no verified clearing route exists, normal safety and
+recovery handling remains active. Swimming does not start this staging search.
+Recognized dry side exits instead use `entry_brake_N`: sustained LEFT followed by
+RIGHT without A, with actual engine pipe entry required for success. This lets
+Mario retreat off a pipe rim and descend without recovery inserting another jump.
+Successful entry plans are logged as `selection.mode=pipe_entry_route`.
+The search is bounded and does not claim to find every route.
+
+Recovery progress is measured beyond its historical horizontal anchor, and height
+credit comes from a supported endpoint. Retreating then returning to the same wall
+or reaching a transient jump peak does not by itself earn escape progress.
+Coordinate discontinuities greater than 32 pixels per elapsed frame rebase that
+anchor and its stall timer. This handles left-edge coordinate wrap and same-area
+warps without leaving recovery permanently active; gradual retreat still counts
+as lack of forward progress.
+`tests/test_staging_routes.py` covers both approaches from the 4-2 stall log,
+including forecast/execution agreement and repeated planning with queued inputs.
+
 ### Underwater control
 
 The engine's `SwimmingFlag` selects swimming behavior, including in 2-2 and 7-2;
