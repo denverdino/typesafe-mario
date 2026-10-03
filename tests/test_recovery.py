@@ -1,5 +1,3 @@
-from collections import Counter
-
 import pytest
 
 from typesafe_mario.state import MarioStateParser
@@ -30,6 +28,17 @@ def test_gradual_retreat_does_not_reset_stall_deadline():
     assert recovery["active"]
     assert recovery["anchor_x"] == 500
     assert recovery["no_progress_frames"] == 100
+
+
+def test_stationary_wall_input_is_distinct_from_waiting_or_a_jump_in_progress():
+    p = MarioStateParser()
+    for _ in range(64):
+        s = p.parse({"x_pos": 100, "y_pos": 79}, previous_action="right")
+    assert s.recovery["stationary_frames"] >= 48
+    assert s.recovery["stationary_action_frames"]["right"] >= 48
+    s = p.parse({"x_pos": 100, "y_pos": 85}, previous_action="jump")
+    assert s.recovery["stationary_frames"] == 0
+    assert s.recovery["stationary_action_frames"] == {}
 
 
 def test_repeated_jumps_and_small_horizontal_oscillation_trigger_recovery():
@@ -78,79 +87,3 @@ def test_supported_plant_wait_is_intentional_but_not_unbounded():
     assert s.to_state()["recovery"]["intentional_wait"]
     s = replace(s, recovery={**s.recovery, "no_progress_frames": 200})
     assert s.to_state()["recovery"]["active"]
-
-
-def test_safe_undertried_actions_can_override_repeated_high_probability_choice():
-    from typesafe_mario.actions import Action
-    from typesafe_mario.policy import Decision
-    from typesafe_mario.recovery import recover_decision
-
-    state = {
-        "level": {"world": 2, "stage": 1, "area": 1},
-        "recovery": {
-            "active": True,
-            "no_progress_frames": 80,
-            "action_frames": {"right_run_jump": 80},
-        },
-        "prediction": {"observation_frame": 100, "action_forecasts": []},
-    }
-    for name, risk in [
-        ("right_run_jump", "safe"),
-        ("left", "safe"),
-        ("noop", "safe"),
-        ("right", "unsafe"),
-    ]:
-        state["prediction"]["action_forecasts"].append(
-            {
-                "action": name,
-                "continuations": {
-                    "repeat": {
-                        "risk": risk,
-                        "progress_pixels": 0,
-                        "max_forward_progress_pixels": 0,
-                        "events": [],
-                    }
-                },
-            }
-        )
-    proposal = Decision(
-        Action.RIGHT_RUN_JUMP,
-        0.9,
-        {"right_run_jump": 0.9, "left": 0.04, "noop": 0.03, "right": 0.03},
-        1,
-    )
-    chosen = Counter()
-    for frame in range(100, 140):
-        state["prediction"]["observation_frame"] = frame
-        result = recover_decision(state, proposal, tuple(Action))
-        chosen[result.action] += 1
-        assert result.action in (Action.LEFT, Action.NOOP)
-        assert result.selection["proposed_action"] == "right_run_jump"
-        assert result.probabilities == proposal.probabilities
-        assert result == recover_decision(state, proposal, tuple(Action))
-    assert len(chosen) == 2
-    # A repeated action that actually gains new height next cycle must be allowed
-    # to finish a useful launch; merely having a high future height is insufficient.
-    state["prediction"]["action_forecasts"][0]["first_cycle"] = {"max_height_y": 240}
-    state["recovery"]["recent_max_height"] = 180
-    assert recover_decision(state, proposal, tuple(Action)) == proposal
-    state["recovery"]["active"] = False
-    assert recover_decision(state, proposal, tuple(Action)) == proposal
-
-
-def test_recovery_does_not_sample_unsafe_or_unknown_alternatives():
-    from typesafe_mario.actions import Action
-    from typesafe_mario.policy import Decision
-    from typesafe_mario.recovery import recover_decision
-
-    s = {
-        "recovery": {"active": True, "action_frames": {"right": 80}},
-        "prediction": {
-            "action_forecasts": [
-                {"action": "left", "continuations": {"repeat": {"risk": "unsafe"}}},
-                {"action": "noop", "continuations": {"repeat": {"risk": "unknown"}}},
-            ]
-        },
-    }
-    proposed = Decision(Action.RIGHT, 0.8, {"right": 0.8}, 1)
-    assert recover_decision(s, proposed, tuple(Action)).action == Action.RIGHT

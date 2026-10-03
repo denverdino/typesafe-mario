@@ -1,0 +1,6 @@
+{
+  "env_id": "SuperMarioBros-1-1-v0",
+  "seed": 123,
+  "source": "run-20261002T083125.189702Z.jsonl, first episode, actual executed inputs only",
+  "buttons": [["right_run", 80], ["right_run_jump", 24], ["right_run", 1], ["right_run_jump", 1]]
+}

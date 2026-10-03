@@ -11,8 +11,9 @@ from uuid import uuid4
 from .actions import ACTION_TO_INDEX, Action, first_frame_action
 from .checkpoint import Checkpoint, checkpoint_from_log
 from .dashboard import DashboardCommand, LiveDashboard
+from .observation import model_state, observe
 from .policy import Decision, Policy
-from .prediction import forecast_actions
+from .prediction import BACKEND, VERSION, Predictor
 from .state import MarioSnapshot, MarioStateParser
 
 
@@ -84,7 +85,7 @@ class EpisodeLog:
         self.active = {
             "record_type": "decision",
             "decision": index,
-            "state": observed.to_state(),
+            "state": model_state(observed),
             "debug_state": observed.to_debug_state(),
             "state_text": observed.to_text(),
             "action": decision.action.value,
@@ -217,6 +218,8 @@ def _run_realtime_dashboard(
         frame, parser, snapshot = retry_checkpoint.restore(env)
     else:
         snapshot = parser.parse(info, _unwrap_ram(env), previous_response_delay_frames=0)
+    predictor = Predictor()
+    predictor.observe(observe(snapshot))
 
     with ThreadPoolExecutor(max_workers=1, thread_name_prefix="typesafe-jev") as executor:
         while True:
@@ -246,6 +249,11 @@ def _run_realtime_dashboard(
                     snapshot,
                     previous_response_delay_frames,
                 )
+                predictor.expect(
+                    pending_snapshot.prediction or {},
+                    decision.action,
+                    application_frame=snapshot.frame_index,
+                )
                 print(
                     f"#{pending_index:04d} observed_x={pending_snapshot.x:04d} "
                     f"applied_x={snapshot.x:04d} action={decision.action.value:<15} "
@@ -274,7 +282,15 @@ def _run_realtime_dashboard(
                 pending_index = next_index
                 pending_request_frame = recorder.total_frames
                 try:
-                    pending_snapshot = forecast_actions(env, parser, pending_snapshot, actions)
+                    prediction = predictor.forecast(
+                        observe(pending_snapshot),
+                        actions,
+                        cycle=frames_per_decision,
+                        delay=remaining,
+                        scheduled_action=scheduled,
+                        scheduled_first_frame_action=pending_snapshot.scheduled_first_frame_action,
+                    )
+                    pending_snapshot = replace(pending_snapshot, prediction=prediction)
                 except Exception:
                     recorder.end(snapshot, terminated, truncated, "prediction_error")
                     raise
@@ -291,6 +307,7 @@ def _run_realtime_dashboard(
                     delay_frames=previous_response_delay_frames,
                 )
                 recorder.step(actual, reward)
+                predictor.observe(observe(snapshot))
                 cycle_frames += 1
                 if cycle_frames == frames_per_decision:
                     recorder.finish(snapshot, terminated, truncated)
@@ -345,6 +362,8 @@ def _run_realtime_dashboard(
                         info, _unwrap_ram(env), previous_response_delay_frames=0
                     )
                 active_decision = None
+                predictor = Predictor()
+                predictor.observe(observe(snapshot))
                 pending = None
                 pending_snapshot = None
                 pending_index = next_index = cycle_frames = pending_request_frame = 0
@@ -391,10 +410,10 @@ def run_episode(
         "frames_per_decision": frames_per_decision,
         "control_mode": "fixed_frame_lookahead",
         "policy": type(policy).__name__,
-        "prompt_version": 34,
-        "state_version": 27,
-        "prediction_backend": "native_checkpoint",
-        "prediction_version": 5,
+        "prompt_version": 54,
+        "state_version": 43,
+        "prediction_backend": BACKEND,
+        "prediction_version": VERSION,
         "landing_replan": False,
     }
     try:

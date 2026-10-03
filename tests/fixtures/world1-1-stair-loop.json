@@ -1,0 +1,3643 @@
+{
+  "source": "run-20261003T015004.804196Z.jsonl",
+  "env_id": "SuperMarioBros-1-1-v0",
+  "seed": 123,
+  "buttons": [
+    [
+      "right_run",
+      64
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "right_jump",
+      16
+    ],
+    [
+      "right_run",
+      24
+    ],
+    [
+      "jump",
+      8
+    ],
+    [
+      "right_run_jump",
+      24
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right",
+      16
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "jump",
+      24
+    ],
+    [
+      "right_jump",
+      16
+    ],
+    [
+      "right_run",
+      1
+    ],
+    [
+      "right_run_jump",
+      7
+    ],
+    [
+      "left",
+      16
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "left",
+      16
+    ],
+    [
+      "right_jump",
+      24
+    ],
+    [
+      "right_run_jump",
+      16
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_jump",
+      32
+    ],
+    [
+      "right",
+      1
+    ],
+    [
+      "right_jump",
+      23
+    ],
+    [
+      "noop",
+      32
+    ],
+    [
+      "jump",
+      8
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "right_run_jump",
+      16
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "right_jump",
+      32
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "right_run",
+      40
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      24
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right_run",
+      16
+    ],
+    [
+      "jump",
+      8
+    ],
+    [
+      "right",
+      16
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "right_run_jump",
+      16
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      16
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "left",
+      32
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_jump",
+      24
+    ],
+    [
+      "jump",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      16
+    ],
+    [
+      "right_run",
+      16
+    ],
+    [
+      "right",
+      16
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_jump",
+      32
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "jump",
+      16
+    ],
+    [
+      "left",
+      16
+    ],
+    [
+      "noop",
+      24
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "left",
+      24
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_jump",
+      16
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "left",
+      16
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "right_run_jump",
+      24
+    ],
+    [
+      "right_run",
+      32
+    ],
+    [
+      "right",
+      24
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "right_run",
+      16
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_run_jump",
+      16
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "right_jump",
+      16
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "right_run",
+      1
+    ],
+    [
+      "right_run_jump",
+      7
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "right_run",
+      16
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "right_jump",
+      16
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_run_jump",
+      48
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "right_run",
+      16
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_run_jump",
+      16
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "jump",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "jump",
+      8
+    ],
+    [
+      "right_jump",
+      16
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right_run",
+      32
+    ],
+    [
+      "right_jump",
+      32
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right_jump",
+      24
+    ],
+    [
+      "right",
+      32
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "right",
+      1
+    ],
+    [
+      "right_jump",
+      7
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right_jump",
+      8
+    ],
+    [
+      "noop",
+      16
+    ],
+    [
+      "jump",
+      8
+    ],
+    [
+      "right",
+      16
+    ],
+    [
+      "right_run",
+      8
+    ],
+    [
+      "jump",
+      16
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "right_jump",
+      32
+    ],
+    [
+      "right_run_jump",
+      8
+    ],
+    [
+      "noop",
+      56
+    ],
+    [
+      "right",
+      24
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "left",
+      8
+    ],
+    [
+      "noop",
+      8
+    ],
+    [
+      "right",
+      8
+    ],
+    [
+      "noop",
+      8
+    ]
+  ],
+  "cases": [
+    {
+      "frame": 2264,
+      "chosen": "left",
+      "state": {
+        "objective": "Complete the current stage without dying.",
+        "observation_frame": 2256,
+        "level": {
+          "world": 1,
+          "stage": 1,
+          "area": 1
+        },
+        "player": {
+          "x": 2992,
+          "y": 191,
+          "center_x": 3000,
+          "horizontal_speed_px_per_frame": 1,
+          "vertical_speed_px_per_frame": 0,
+          "grounded": true,
+          "swimming": false,
+          "height_pixels": 16,
+          "motion_reliable": true
+        },
+        "terrain": {
+          "known_x": [
+            2868,
+            3124
+          ],
+          "blocks": [
+            {
+              "left": 3008,
+              "right": 3040,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 2992,
+              "right": 3040,
+              "bottom": 175,
+              "top": 191
+            },
+            {
+              "left": 2976,
+              "right": 3040,
+              "bottom": 159,
+              "top": 175
+            },
+            {
+              "left": 2960,
+              "right": 3040,
+              "bottom": 143,
+              "top": 159
+            },
+            {
+              "left": 2944,
+              "right": 3040,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 2928,
+              "right": 3040,
+              "bottom": 111,
+              "top": 127
+            },
+            {
+              "left": 2868,
+              "right": 2896,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2912,
+              "right": 3040,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2868,
+              "right": 3040,
+              "bottom": 79,
+              "top": 95
+            },
+            {
+              "left": 2868,
+              "right": 3124,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 2868,
+              "right": 3124,
+              "bottom": 47,
+              "top": 63
+            }
+          ]
+        },
+        "visible_actors": [],
+        "recovery": {
+          "active": true,
+          "no_progress_frames": 140,
+          "anchor_x": 2993,
+          "action_frames": {
+            "noop": 40,
+            "right": 40,
+            "left": 16
+          },
+          "stationary_frames": 95,
+          "stationary_action_frames": {
+            "right": 40,
+            "noop": 39,
+            "left": 16
+          }
+        },
+        "reaction_timing": {
+          "frames_until_action": 8,
+          "action_horizon_frames": 8,
+          "total_reaction_horizon_frames": 16,
+          "scheduled_action": "noop",
+          "scheduled_first_frame_action": "noop"
+        },
+        "recent_control": {
+          "action": "right"
+        },
+        "episode": {
+          "dead": false,
+          "stage_clear": false,
+          "score": 200
+        },
+        "observation_limits": "Only currently visible tile geometry and actor positions. Unseen space, hidden enemies, spawn rules and internal timers are unknown.",
+        "prediction": {
+          "backend": "observation_dynamics",
+          "application_frame": 8,
+          "horizon_after_application_frames": 48,
+          "committed_future": {
+            "frame": 8,
+            "x": 2994,
+            "y": 191,
+            "vx": 0,
+            "vy": 0,
+            "grounded_estimate": true,
+            "x_range": [
+              2990.76,
+              2997.24
+            ],
+            "y_range": [
+              186.64,
+              195.36
+            ]
+          },
+          "action_forecasts": [
+            {
+              "action": "noop",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 191,
+                "vx": 0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "noop",
+                  "right_jump",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 49,
+                    "x": 3020.89,
+                    "y": 207,
+                    "vx": 1.63,
+                    "frames_until_next_action": 7,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 38.3,
+                "mean_progress": 10.59,
+                "score": 41.59,
+                "end": {
+                  "x": 3032.3,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 191,
+                "vx": 0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right",
+                  "right_jump",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 49,
+                    "x": 3020.89,
+                    "y": 207,
+                    "vx": 1.63,
+                    "frames_until_next_action": 7,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 38.3,
+                "mean_progress": 10.59,
+                "score": 41.59,
+                "end": {
+                  "x": 3032.3,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994.41,
+                "y": 222.1,
+                "vx": 0.2,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2987.65,
+                  3001.17
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3006.9,
+                    "y": 207,
+                    "vx": 1.29,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 23.29,
+                "mean_progress": 12.44,
+                "score": 27.51,
+                "end": {
+                  "x": 3017.29,
+                  "y": 207,
+                  "grounded_estimate": true
+                },
+                "followup": {
+                  "actions": [
+                    "right_jump",
+                    "right_jump",
+                    "right",
+                    "right",
+                    "right",
+                    "noop"
+                  ],
+                  "warnings": [
+                    "marginal_landing",
+                    "unresolved_flight"
+                  ],
+                  "failure": null,
+                  "evaluated_frames": 48,
+                  "horizon_frames": 48
+                }
+              }
+            },
+            {
+              "action": "right_run",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 191,
+                "vx": 0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run",
+                  "right_jump",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 49,
+                    "x": 3020.89,
+                    "y": 207,
+                    "vx": 1.63,
+                    "frames_until_next_action": 7,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 38.3,
+                "mean_progress": 10.59,
+                "score": 41.59,
+                "end": {
+                  "x": 3032.3,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_run_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994.41,
+                "y": 222.1,
+                "vx": 0.2,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2987.65,
+                  3001.17
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run_jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3006.9,
+                    "y": 207,
+                    "vx": 1.29,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 23.29,
+                "mean_progress": 12.44,
+                "score": 27.51,
+                "end": {
+                  "x": 3017.29,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 222.1,
+                "vx": 0,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3003.23,
+                    "y": 207,
+                    "vx": 1.09,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 16.53,
+                "mean_progress": 8.79,
+                "score": 6.92,
+                "end": {
+                  "x": 3010.53,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "left",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2988.85,
+                "y": 191,
+                "vx": -1.14,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2982.09,
+                  2995.61
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "left",
+                  "right",
+                  "right_jump",
+                  "right",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 48,
+                    "x": 3023.3,
+                    "y": 207,
+                    "vx": 1.67,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 39.92,
+                "mean_progress": 9.99,
+                "score": 42.91,
+                "end": {
+                  "x": 3033.92,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 2272,
+      "chosen": "noop",
+      "state": {
+        "objective": "Complete the current stage without dying.",
+        "observation_frame": 2264,
+        "level": {
+          "world": 1,
+          "stage": 1,
+          "area": 1
+        },
+        "player": {
+          "x": 2994,
+          "y": 191,
+          "center_x": 3002,
+          "horizontal_speed_px_per_frame": 0,
+          "vertical_speed_px_per_frame": 0,
+          "grounded": true,
+          "swimming": false,
+          "height_pixels": 16,
+          "motion_reliable": true
+        },
+        "terrain": {
+          "known_x": [
+            2870,
+            3126
+          ],
+          "blocks": [
+            {
+              "left": 3008,
+              "right": 3040,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 2992,
+              "right": 3040,
+              "bottom": 175,
+              "top": 191
+            },
+            {
+              "left": 2976,
+              "right": 3040,
+              "bottom": 159,
+              "top": 175
+            },
+            {
+              "left": 2960,
+              "right": 3040,
+              "bottom": 143,
+              "top": 159
+            },
+            {
+              "left": 2944,
+              "right": 3040,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 2928,
+              "right": 3040,
+              "bottom": 111,
+              "top": 127
+            },
+            {
+              "left": 2870,
+              "right": 2896,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2912,
+              "right": 3040,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2870,
+              "right": 3040,
+              "bottom": 79,
+              "top": 95
+            },
+            {
+              "left": 2870,
+              "right": 3126,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 2870,
+              "right": 3126,
+              "bottom": 47,
+              "top": 63
+            }
+          ]
+        },
+        "visible_actors": [],
+        "recovery": {
+          "active": true,
+          "no_progress_frames": 148,
+          "anchor_x": 2993,
+          "action_frames": {
+            "noop": 40,
+            "right": 40,
+            "left": 16
+          },
+          "stationary_frames": 8,
+          "stationary_action_frames": {
+            "noop": 8
+          }
+        },
+        "reaction_timing": {
+          "frames_until_action": 8,
+          "action_horizon_frames": 8,
+          "total_reaction_horizon_frames": 16,
+          "scheduled_action": "left",
+          "scheduled_first_frame_action": "left"
+        },
+        "recent_control": {
+          "action": "noop"
+        },
+        "episode": {
+          "dead": false,
+          "stage_clear": false,
+          "score": 200
+        },
+        "observation_limits": "Only currently visible tile geometry and actor positions. Unseen space, hidden enemies, spawn rules and internal timers are unknown.",
+        "prediction": {
+          "backend": "observation_dynamics",
+          "application_frame": 8,
+          "horizon_after_application_frames": 48,
+          "committed_future": {
+            "frame": 8,
+            "x": 2988.85,
+            "y": 191,
+            "vx": -1.14,
+            "vy": 0,
+            "grounded_estimate": true,
+            "x_range": [
+              2985.61,
+              2992.09
+            ],
+            "y_range": [
+              186.64,
+              195.36
+            ]
+          },
+          "action_forecasts": [
+            {
+              "action": "noop",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2982.42,
+                "y": 191,
+                "vx": -0.54,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2975.66,
+                  2989.18
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "noop",
+                  "right",
+                  "right_jump",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 48,
+                    "x": 3023.03,
+                    "y": 207,
+                    "vx": 1.61,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 44.34,
+                "mean_progress": 13.03,
+                "score": 48.85,
+                "end": {
+                  "x": 3033.19,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2988.66,
+                "y": 191,
+                "vx": 0.63,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2981.9,
+                  2995.42
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right",
+                  "right",
+                  "right",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [],
+                "progress": 5.15,
+                "mean_progress": 3.83,
+                "score": 7.06,
+                "end": {
+                  "x": 2994,
+                  "y": 191,
+                  "grounded_estimate": true
+                },
+                "followup": {
+                  "actions": [
+                    "right",
+                    "right_jump",
+                    "right",
+                    "noop",
+                    "noop",
+                    "noop"
+                  ],
+                  "warnings": [
+                    "marginal_landing",
+                    "unresolved_flight"
+                  ],
+                  "failure": null,
+                  "evaluated_frames": 48,
+                  "horizon_frames": 48
+                }
+              }
+            },
+            {
+              "action": "right_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2985.18,
+                "y": 222.1,
+                "vx": -0.2,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2978.42,
+                  2991.94
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_jump",
+                  "right_jump",
+                  "right_jump",
+                  "right_jump",
+                  "right_jump",
+                  "right_jump"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 52,
+                    "x": 3020.26,
+                    "y": 207,
+                    "vx": 1.64,
+                    "frames_until_next_action": 4,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 37.96,
+                "mean_progress": 8.75,
+                "score": 40.34,
+                "end": {
+                  "x": 3026.81,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_run",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2988.61,
+                "y": 191,
+                "vx": 0.61,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2981.85,
+                  2995.37
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run",
+                  "right_run",
+                  "right_run",
+                  "right_run",
+                  "right_run",
+                  "right_run"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [],
+                "progress": 5.15,
+                "mean_progress": 3.81,
+                "score": 7.05,
+                "end": {
+                  "x": 2994,
+                  "y": 191,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_run_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2985.18,
+                "y": 222.1,
+                "vx": -0.2,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2978.42,
+                  2991.94
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run_jump",
+                  "right_run_jump",
+                  "right_run_jump",
+                  "right_run_jump",
+                  "right_run_jump",
+                  "right_run_jump"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 52,
+                    "x": 3020.26,
+                    "y": 207,
+                    "vx": 1.64,
+                    "frames_until_next_action": 4,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 39.32,
+                "mean_progress": 8.81,
+                "score": 41.72,
+                "end": {
+                  "x": 3028.17,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2980.83,
+                "y": 222.1,
+                "vx": -0.99,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2974.07,
+                  2987.59
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "jump",
+                  "right",
+                  "right",
+                  "right",
+                  "right_jump",
+                  "right",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 64,
+                "horizon_frames": 64,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 38,
+                    "x": 2976.17,
+                    "y": 175,
+                    "vx": 0.5,
+                    "frames_until_next_action": 2,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  },
+                  {
+                    "frame": 64,
+                    "x": 2988.46,
+                    "y": 191,
+                    "vx": 0.75,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 2.86,
+                "mean_progress": -8.02,
+                "score": -5.15,
+                "end": {
+                  "x": 2991.72,
+                  "y": 191,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "left",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2975.99,
+                "y": 189.24,
+                "vx": -1.72,
+                "vy": -1.18,
+                "grounded_estimate": false,
+                "x_range": [
+                  2969.23,
+                  2982.75
+                ],
+                "y_range": [
+                  179.6,
+                  198.88
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "left",
+                  "right",
+                  "right",
+                  "noop",
+                  "right_jump",
+                  "right",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 64,
+                "horizon_frames": 64,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 21,
+                    "x": 2968.43,
+                    "y": 175,
+                    "vx": -1.38,
+                    "frames_until_next_action": 3,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  },
+                  {
+                    "frame": 60,
+                    "x": 2997.74,
+                    "y": 207,
+                    "vx": 1.59,
+                    "frames_until_next_action": 4,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 22.09,
+                "mean_progress": -6.27,
+                "score": -19.04,
+                "end": {
+                  "x": 3010.95,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 2280,
+      "chosen": "right",
+      "state": {
+        "objective": "Complete the current stage without dying.",
+        "observation_frame": 2272,
+        "level": {
+          "world": 1,
+          "stage": 1,
+          "area": 1
+        },
+        "player": {
+          "x": 2992,
+          "y": 191,
+          "center_x": 3000,
+          "horizontal_speed_px_per_frame": -1,
+          "vertical_speed_px_per_frame": 0,
+          "grounded": true,
+          "swimming": false,
+          "height_pixels": 16,
+          "motion_reliable": true
+        },
+        "terrain": {
+          "known_x": [
+            2870,
+            3126
+          ],
+          "blocks": [
+            {
+              "left": 3008,
+              "right": 3040,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 2992,
+              "right": 3040,
+              "bottom": 175,
+              "top": 191
+            },
+            {
+              "left": 2976,
+              "right": 3040,
+              "bottom": 159,
+              "top": 175
+            },
+            {
+              "left": 2960,
+              "right": 3040,
+              "bottom": 143,
+              "top": 159
+            },
+            {
+              "left": 2944,
+              "right": 3040,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 2928,
+              "right": 3040,
+              "bottom": 111,
+              "top": 127
+            },
+            {
+              "left": 2870,
+              "right": 2896,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2912,
+              "right": 3040,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2870,
+              "right": 3040,
+              "bottom": 79,
+              "top": 95
+            },
+            {
+              "left": 2870,
+              "right": 3126,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 2870,
+              "right": 3126,
+              "bottom": 47,
+              "top": 63
+            }
+          ]
+        },
+        "visible_actors": [],
+        "recovery": {
+          "active": true,
+          "no_progress_frames": 156,
+          "anchor_x": 2993,
+          "action_frames": {
+            "right": 40,
+            "left": 24,
+            "noop": 32
+          },
+          "stationary_frames": 95,
+          "stationary_action_frames": {
+            "left": 24,
+            "noop": 32,
+            "right": 39
+          }
+        },
+        "reaction_timing": {
+          "frames_until_action": 8,
+          "action_horizon_frames": 8,
+          "total_reaction_horizon_frames": 16,
+          "scheduled_action": "noop",
+          "scheduled_first_frame_action": "noop"
+        },
+        "recent_control": {
+          "action": "left"
+        },
+        "episode": {
+          "dead": false,
+          "stage_clear": false,
+          "score": 200
+        },
+        "observation_limits": "Only currently visible tile geometry and actor positions. Unseen space, hidden enemies, spawn rules and internal timers are unknown.",
+        "prediction": {
+          "backend": "observation_dynamics",
+          "application_frame": 8,
+          "horizon_after_application_frames": 48,
+          "committed_future": {
+            "frame": 8,
+            "x": 2986.71,
+            "y": 191,
+            "vx": -0.4,
+            "vy": 0,
+            "grounded_estimate": true,
+            "x_range": [
+              2983.47,
+              2989.95
+            ],
+            "y_range": [
+              186.64,
+              195.36
+            ]
+          },
+          "action_forecasts": [
+            {
+              "action": "noop",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2985.86,
+                "y": 191,
+                "vx": 0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2979.1,
+                  2992.62
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "noop",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 40,
+                    "x": 3009.56,
+                    "y": 207,
+                    "vx": 1.64,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 38.89,
+                "mean_progress": 15.01,
+                "score": 44.4,
+                "end": {
+                  "x": 3025.6,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2990.59,
+                "y": 191,
+                "vx": 1.0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2983.83,
+                  2997.35
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 40,
+                    "x": 3006.9,
+                    "y": 207,
+                    "vx": 1.29,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 47.26,
+                "mean_progress": 17.14,
+                "score": 53.83,
+                "end": {
+                  "x": 3033.98,
+                  "y": 207,
+                  "grounded_estimate": true
+                },
+                "followup": {
+                  "actions": [
+                    "right",
+                    "right_jump",
+                    "noop",
+                    "noop",
+                    "noop",
+                    "noop"
+                  ],
+                  "warnings": [
+                    "marginal_landing"
+                  ],
+                  "failure": null,
+                  "evaluated_frames": 48,
+                  "horizon_frames": 48
+                }
+              }
+            },
+            {
+              "action": "right_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2989.01,
+                "y": 222.1,
+                "vx": 0.55,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2982.25,
+                  2995.77
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3007.06,
+                    "y": 207,
+                    "vx": 1.64,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 37.29,
+                "mean_progress": 19.95,
+                "score": 45.27,
+                "end": {
+                  "x": 3024.01,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_run",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2990.44,
+                "y": 191,
+                "vx": 0.96,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2983.68,
+                  2997.2
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 40,
+                    "x": 3006.9,
+                    "y": 207,
+                    "vx": 1.29,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 47.26,
+                "mean_progress": 17.13,
+                "score": 53.83,
+                "end": {
+                  "x": 3033.98,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_run_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2989.01,
+                "y": 222.1,
+                "vx": 0.55,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2982.25,
+                  2995.77
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run_jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3007.06,
+                    "y": 207,
+                    "vx": 1.64,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 37.29,
+                "mean_progress": 19.95,
+                "score": 45.27,
+                "end": {
+                  "x": 3024.01,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2984.67,
+                "y": 222.1,
+                "vx": -0.25,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2977.91,
+                  2991.43
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "jump",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right_run",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 41,
+                    "x": 3000.59,
+                    "y": 207,
+                    "vx": 1.45,
+                    "frames_until_next_action": 7,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 47.06,
+                "mean_progress": 10.76,
+                "score": 38.44,
+                "end": {
+                  "x": 3033.77,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "left",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2978.47,
+                "y": 190.41,
+                "vx": -1.47,
+                "vy": -0.59,
+                "grounded_estimate": false,
+                "x_range": [
+                  2971.71,
+                  2985.23
+                ],
+                "y_range": [
+                  180.77,
+                  200.05
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "left",
+                  "right",
+                  "right",
+                  "jump",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 22,
+                    "x": 2971.1,
+                    "y": 175,
+                    "vx": -1.06,
+                    "frames_until_next_action": 2,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  },
+                  {
+                    "frame": 56,
+                    "x": 2994,
+                    "y": 191,
+                    "vx": 0,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 7.29,
+                "mean_progress": -7.12,
+                "score": -22.28,
+                "end": {
+                  "x": 2994,
+                  "y": 191,
+                  "grounded_estimate": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 2288,
+      "chosen": "noop",
+      "state": {
+        "objective": "Complete the current stage without dying.",
+        "observation_frame": 2280,
+        "level": {
+          "world": 1,
+          "stage": 1,
+          "area": 1
+        },
+        "player": {
+          "x": 2990,
+          "y": 191,
+          "center_x": 2998,
+          "horizontal_speed_px_per_frame": 0,
+          "vertical_speed_px_per_frame": 0,
+          "grounded": true,
+          "swimming": false,
+          "height_pixels": 16,
+          "motion_reliable": true
+        },
+        "terrain": {
+          "known_x": [
+            2870,
+            3126
+          ],
+          "blocks": [
+            {
+              "left": 3008,
+              "right": 3040,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 2992,
+              "right": 3040,
+              "bottom": 175,
+              "top": 191
+            },
+            {
+              "left": 2976,
+              "right": 3040,
+              "bottom": 159,
+              "top": 175
+            },
+            {
+              "left": 2960,
+              "right": 3040,
+              "bottom": 143,
+              "top": 159
+            },
+            {
+              "left": 2944,
+              "right": 3040,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 2928,
+              "right": 3040,
+              "bottom": 111,
+              "top": 127
+            },
+            {
+              "left": 2870,
+              "right": 2896,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2912,
+              "right": 3040,
+              "bottom": 95,
+              "top": 111
+            },
+            {
+              "left": 2870,
+              "right": 3040,
+              "bottom": 79,
+              "top": 95
+            },
+            {
+              "left": 2870,
+              "right": 3126,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 2870,
+              "right": 3126,
+              "bottom": 47,
+              "top": 63
+            }
+          ]
+        },
+        "visible_actors": [],
+        "recovery": {
+          "active": true,
+          "no_progress_frames": 164,
+          "anchor_x": 2993,
+          "action_frames": {
+            "right": 32,
+            "left": 24,
+            "noop": 40
+          },
+          "stationary_frames": 8,
+          "stationary_action_frames": {
+            "noop": 8
+          }
+        },
+        "reaction_timing": {
+          "frames_until_action": 8,
+          "action_horizon_frames": 8,
+          "total_reaction_horizon_frames": 16,
+          "scheduled_action": "right",
+          "scheduled_first_frame_action": "right"
+        },
+        "recent_control": {
+          "action": "noop"
+        },
+        "episode": {
+          "dead": false,
+          "stage_clear": false,
+          "score": 200
+        },
+        "observation_limits": "Only currently visible tile geometry and actor positions. Unseen space, hidden enemies, spawn rules and internal timers are unknown.",
+        "prediction": {
+          "backend": "observation_dynamics",
+          "application_frame": 8,
+          "horizon_after_application_frames": 48,
+          "committed_future": {
+            "frame": 8,
+            "x": 2994,
+            "y": 191,
+            "vx": 0,
+            "vy": 0,
+            "grounded_estimate": true,
+            "x_range": [
+              2990.76,
+              2997.24
+            ],
+            "y_range": [
+              186.64,
+              195.36
+            ]
+          },
+          "action_forecasts": [
+            {
+              "action": "noop",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 191,
+                "vx": 0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "noop",
+                  "right_jump",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 49,
+                    "x": 3020.89,
+                    "y": 207,
+                    "vx": 1.63,
+                    "frames_until_next_action": 7,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 38.3,
+                "mean_progress": 10.59,
+                "score": 41.59,
+                "end": {
+                  "x": 3032.3,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 191,
+                "vx": 0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right",
+                  "right_jump",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 49,
+                    "x": 3020.89,
+                    "y": 207,
+                    "vx": 1.63,
+                    "frames_until_next_action": 7,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 38.3,
+                "mean_progress": 10.59,
+                "score": 41.59,
+                "end": {
+                  "x": 3032.3,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994.41,
+                "y": 222.1,
+                "vx": 0.2,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2987.65,
+                  3001.17
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3006.9,
+                    "y": 207,
+                    "vx": 1.29,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 23.29,
+                "mean_progress": 12.44,
+                "score": 27.51,
+                "end": {
+                  "x": 3017.29,
+                  "y": 207,
+                  "grounded_estimate": true
+                },
+                "followup": {
+                  "actions": [
+                    "right_jump",
+                    "right",
+                    "right",
+                    "right",
+                    "right",
+                    "noop"
+                  ],
+                  "warnings": [
+                    "marginal_landing",
+                    "unresolved_flight"
+                  ],
+                  "failure": null,
+                  "evaluated_frames": 48,
+                  "horizon_frames": 48
+                }
+              }
+            },
+            {
+              "action": "right_run",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 191,
+                "vx": 0,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run",
+                  "right_jump",
+                  "right_jump",
+                  "right",
+                  "right",
+                  "right"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 49,
+                    "x": 3020.89,
+                    "y": 207,
+                    "vx": 1.63,
+                    "frames_until_next_action": 7,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 38.3,
+                "mean_progress": 10.59,
+                "score": 41.59,
+                "end": {
+                  "x": 3032.3,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "right_run_jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994.41,
+                "y": 222.1,
+                "vx": 0.2,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2987.65,
+                  3001.17
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "right_run_jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3006.9,
+                    "y": 207,
+                    "vx": 1.29,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 23.29,
+                "mean_progress": 12.44,
+                "score": 27.51,
+                "end": {
+                  "x": 3017.29,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "jump",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2994,
+                "y": 222.1,
+                "vx": 0,
+                "vy": 3.88,
+                "grounded_estimate": false,
+                "x_range": [
+                  2987.24,
+                  3000.76
+                ],
+                "y_range": [
+                  212.46,
+                  231.74
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "jump",
+                  "right",
+                  "right",
+                  "noop",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 32,
+                    "x": 3003.23,
+                    "y": 207,
+                    "vx": 1.09,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 16.53,
+                "mean_progress": 8.79,
+                "score": 6.92,
+                "end": {
+                  "x": 3010.53,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            },
+            {
+              "action": "left",
+              "control_risk": {
+                "through_frame": 24,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle_risk": {
+                "through_frame": 16,
+                "possible_contact": false,
+                "nominal_contact": false,
+                "possible_fall": false,
+                "uncertain_landing": false,
+                "unobserved_terrain": false,
+                "unreliable_motion": false,
+                "uncertain_wall_contact": false,
+                "uncertain_committed_interaction": false,
+                "uncertain_takeoff": false,
+                "landing_contact_window": false
+              },
+              "first_cycle": {
+                "frame": 16,
+                "x": 2988.85,
+                "y": 191,
+                "vx": -1.14,
+                "vy": 0,
+                "grounded_estimate": true,
+                "x_range": [
+                  2982.09,
+                  2995.61
+                ],
+                "y_range": [
+                  181.36,
+                  200.64
+                ]
+              },
+              "continuation": {
+                "status": "estimated_viable",
+                "actions": [
+                  "left",
+                  "right",
+                  "right_jump",
+                  "right",
+                  "noop",
+                  "noop"
+                ],
+                "evaluated_frames": 48,
+                "horizon_frames": 48,
+                "failure": null,
+                "warnings": [],
+                "interactions": [],
+                "landings": [
+                  {
+                    "frame": 48,
+                    "x": 3023.3,
+                    "y": 207,
+                    "vx": 1.67,
+                    "frames_until_next_action": 0,
+                    "enemies": [],
+                    "assumption": "Nominal landing and reaction margins, not safety. Approximate braking and jump clearance; actor reversals, terrain and contact responses can change them."
+                  }
+                ],
+                "progress": 39.92,
+                "mean_progress": 9.99,
+                "score": 42.91,
+                "end": {
+                  "x": 3033.92,
+                  "y": 207,
+                  "grounded_estimate": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

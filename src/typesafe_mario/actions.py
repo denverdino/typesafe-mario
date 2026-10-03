@@ -44,7 +44,7 @@ def first_frame_action(
 
 ACTION_DESCRIPTIONS: dict[Action, str] = {
     Action.NOOP: "Release all controls; coast. Only for deliberate waiting, not a rising jump.",
-    Action.RIGHT: "Walk right for precision positioning; releases A and shortens a rising jump. Choose this when precision_target_cleared to land on the intermediate step. "
+    Action.RIGHT: "Walk right for precision positioning; releases A and shortens a rising jump. "
     "Do not use to continue an ascent that still needs height.",
     Action.RIGHT_JUMP: "Continue holding A and right throughout a walking jump's ascent, "
     "or jump onto a nearby obstacle from ground. Keeps necessary jump height.",

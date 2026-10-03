@@ -1,0 +1,6604 @@
+{
+  "source": "artifacts/run-20261003T033909.643156Z.jsonl",
+  "cases": {
+    "episode1_decision159": {
+      "history": [
+        {
+          "frame": 1249,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1750,
+          "y": 79,
+          "vx": 2,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1638,
+            1894
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1894,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1638,
+              "right": 1894,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1638,
+              "right": 1894,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1804,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1827,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1250,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1752,
+          "y": 79,
+          "vx": 2,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1640,
+            1896
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1896,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1640,
+              "right": 1896,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1640,
+              "right": 1896,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1803,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1826,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1251,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1753,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1641,
+            1897
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1897,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1641,
+              "right": 1897,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1641,
+              "right": 1897,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1802,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1826,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1252,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1755,
+          "y": 79,
+          "vx": 2,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1643,
+            1899
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1899,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1643,
+              "right": 1899,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1643,
+              "right": 1899,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1802,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1825,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1253,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1756,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1644,
+            1900
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1900,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1644,
+              "right": 1900,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1644,
+              "right": 1900,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1801,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1825,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1254,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1757,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1645,
+            1901
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1901,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1645,
+              "right": 1901,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1645,
+              "right": 1901,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1800,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1824,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1255,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1758,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1646,
+            1902
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1902,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1646,
+              "right": 1902,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1646,
+              "right": 1902,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1800,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1823,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1256,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1759,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1647,
+            1903
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1903,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1647,
+              "right": 1903,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1647,
+              "right": 1903,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1799,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1823,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1257,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1648,
+            1904
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1648,
+              "right": 1904,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1648,
+              "right": 1904,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1799,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1822,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1258,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1761,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1798,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1821,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1259,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1761,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1797,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1821,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1260,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1761,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1797,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1820,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1261,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": -1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1796,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1820,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1262,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1795,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1819,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1263,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1795,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1818,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1264,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1759,
+          "y": 79,
+          "vx": -1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1794,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1818,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        }
+      ],
+      "samples": {
+        "run_accel": [
+          0.0,
+          0.0,
+          0.0,
+          0.3333333333333335,
+          0.0,
+          0.0,
+          0.0,
+          0.33333333333333326,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          -1,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          0,
+          0,
+          1,
+          -1,
+          0.0,
+          0.0,
+          0.0,
+          0.3333333333333333,
+          0,
+          -1,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          -1,
+          -1,
+          1,
+          1
+        ],
+        "friction": [
+          0.06060606060606061,
+          0.08225108225108226,
+          0.11255411255411256,
+          0.15800865800865802,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.06060606060606061,
+          -0.0,
+          0.06060606060606061,
+          0.08225108225108226,
+          0.15800865800865802,
+          0.05844155844155844,
+          0.08008658008658008,
+          0.13636363636363635,
+          0.11471861471861472,
+          0.08225108225108226,
+          0.05844155844155844,
+          0.07575757575757576,
+          0.12121212121212122,
+          0.07575757575757576,
+          0.08225108225108226
+        ],
+        "walk_accel": [
+          1,
+          1,
+          -1,
+          -1,
+          1,
+          -1,
+          0.3333333333333333,
+          -0.3333333333333333,
+          0,
+          0,
+          0,
+          -1,
+          1,
+          0,
+          0.33333333333333337,
+          0.0,
+          0.0,
+          1,
+          1,
+          0.3333333333333333,
+          -1,
+          0,
+          1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1,
+          0,
+          -1,
+          1,
+          -0.0,
+          0.33333333333333337,
+          -0.0,
+          -0.0,
+          0.33333333333333326,
+          0.33333333333333326,
+          0,
+          -1,
+          1,
+          0.0,
+          0.33333333333333337,
+          1,
+          -0.0,
+          -0.0,
+          -0.0
+        ],
+        "jump_speed": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "gravity_hold": [
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481
+        ],
+        "gravity_fall": [
+          0.6666666666666666,
+          2,
+          0,
+          1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          0.666666666666667,
+          0.6666666666666665,
+          0,
+          -1,
+          1,
+          0,
+          1,
+          0.33333333333333304,
+          0.6666666666666667,
+          0.3333333333333335,
+          0.6666666666666666,
+          0.6666666666666666,
+          0.6666666666666666,
+          0.33333333333333337,
+          0.6666666666666667,
+          0.33333333333333326,
+          1.0,
+          0.3333333333333335,
+          0.6666666666666665,
+          0.33333333333333304,
+          0,
+          1,
+          0,
+          1,
+          0.6666666666666665,
+          0.6666666666666667,
+          0.6666666666666666,
+          0.6666666666666666,
+          0,
+          1,
+          1,
+          0,
+          0.666666666666667,
+          0.6666666666666665,
+          -1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          1,
+          0.3333333333333333,
+          2,
+          1,
+          -1,
+          2,
+          0,
+          0.6666666666666665,
+          0.33333333333333304,
+          1,
+          0,
+          1,
+          1,
+          0,
+          0
+        ],
+        "jump_speed_fast": [
+          6,
+          6,
+          5,
+          6,
+          5,
+          5
+        ],
+        "gravity_hold_fast": [
+          0.21212121212121213,
+          0.17965367965367965,
+          0.21861471861471862,
+          0.24891774891774893,
+          0.27705627705627706,
+          0.21645021645021645,
+          0.17316017316017315,
+          0.22077922077922077,
+          0.17316017316017315,
+          0.21645021645021645,
+          0.27705627705627706,
+          0.24891774891774893,
+          0.21861471861471862,
+          0.17965367965367965,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.17965367965367965,
+          0.21212121212121213,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696
+        ],
+        "air_accel": [
+          0.11471861471861472,
+          0.08225108225108226,
+          0.05194805194805195,
+          0.1341991341991342,
+          0.0,
+          0.08225108225108226,
+          0.11904761904761904,
+          0.06060606060606061,
+          0.0,
+          0.0,
+          0.06060606060606061,
+          0.07575757575757576,
+          0.05844155844155844,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.11904761904761904,
+          0.06060606060606061
+        ],
+        "brake_accel": [
+          0,
+          0,
+          1,
+          -1,
+          0.3333333333333335,
+          0,
+          -1,
+          0,
+          0,
+          0,
+          0.6666666666666667,
+          0.3333333333333333,
+          1,
+          -1,
+          0,
+          1,
+          0,
+          0.3333333333333335,
+          -0.0,
+          0.33333333333333326,
+          -0.0,
+          1,
+          -1,
+          1,
+          0,
+          0.33333333333333326,
+          0.0,
+          0.0,
+          0.0,
+          -1,
+          0,
+          1,
+          -1,
+          0.3333333333333335,
+          -0.0,
+          0.33333333333333326,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.33333333333333337,
+          0.3333333333333333,
+          0.6666666666666666
+        ]
+      },
+      "fast_jump": null,
+      "bouncing": false,
+      "timing": {
+        "frames_until_action": 8,
+        "action_horizon_frames": 8,
+        "total_reaction_horizon_frames": 16,
+        "scheduled_action": "right_jump",
+        "scheduled_first_frame_action": "right_jump"
+      },
+      "expected_next": {
+        "x": 1757,
+        "center_x": 1765,
+        "y": 109,
+        "horizontal_speed_px_per_frame": 0,
+        "vertical_speed_px_per_frame": 4,
+        "grounded": false,
+        "swimming": false,
+        "landed_this_frame": false,
+        "jump_button_held": true,
+        "can_start_jump": false,
+        "jump_requires_release": false,
+        "jump_phase": "rising",
+        "powerup_status": "small"
+      }
+    },
+    "episode1_decision160": {
+      "history": [
+        {
+          "frame": 1257,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1648,
+            1904
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1648,
+              "right": 1904,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1648,
+              "right": 1904,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1799,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1822,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1258,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1761,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1798,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1821,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1259,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1761,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1797,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1821,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1260,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1761,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1797,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1820,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1261,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": -1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1796,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1820,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1262,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1795,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1819,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1263,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1760,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1795,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1818,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1264,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1759,
+          "y": 79,
+          "vx": -1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1794,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1818,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1265,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1759,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1794,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1817,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1266,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1758,
+          "y": 84,
+          "vx": -1,
+          "vy": 5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1793,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1816,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1267,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1758,
+          "y": 89,
+          "vx": 0,
+          "vy": 5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1792,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1816,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1268,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1758,
+          "y": 93,
+          "vx": 0,
+          "vy": 4,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1792,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1815,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1269,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1757,
+          "y": 98,
+          "vx": -1,
+          "vy": 5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1791,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1815,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1270,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1757,
+          "y": 102,
+          "vx": 0,
+          "vy": 4,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1790,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1814,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1271,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1757,
+          "y": 105,
+          "vx": 0,
+          "vy": 3,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1790,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1813,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1272,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1757,
+          "y": 109,
+          "vx": 0,
+          "vy": 4,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1649,
+            1905
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1904,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1649,
+              "right": 1905,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1789,
+              "y": 71
+            },
+            {
+              "identity": "2:goomba",
+              "kind": "goomba",
+              "x": 1813,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        }
+      ],
+      "samples": {
+        "run_accel": [
+          0.0,
+          0.0,
+          0.0,
+          0.3333333333333335,
+          0.0,
+          0.0,
+          0.0,
+          0.33333333333333326,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          -1,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          0,
+          0,
+          1,
+          -1,
+          0.0,
+          0.0,
+          0.0,
+          0.3333333333333333,
+          0,
+          -1,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          -1,
+          -1,
+          1,
+          1
+        ],
+        "friction": [
+          0.06060606060606061,
+          0.08225108225108226,
+          0.11255411255411256,
+          0.15800865800865802,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.06060606060606061,
+          -0.0,
+          0.06060606060606061,
+          0.08225108225108226,
+          0.15800865800865802,
+          0.05844155844155844,
+          0.08008658008658008,
+          0.13636363636363635,
+          0.11471861471861472,
+          0.08225108225108226,
+          0.05844155844155844,
+          0.07575757575757576,
+          0.12121212121212122,
+          0.07575757575757576,
+          0.08225108225108226
+        ],
+        "walk_accel": [
+          1,
+          1,
+          -1,
+          -1,
+          1,
+          -1,
+          0.3333333333333333,
+          -0.3333333333333333,
+          0,
+          0,
+          0,
+          -1,
+          1,
+          0,
+          0.33333333333333337,
+          0.0,
+          0.0,
+          1,
+          1,
+          0.3333333333333333,
+          -1,
+          0,
+          1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1,
+          0,
+          -1,
+          1,
+          -0.0,
+          0.33333333333333337,
+          -0.0,
+          -0.0,
+          0.33333333333333326,
+          0.33333333333333326,
+          0,
+          -1,
+          1,
+          0.0,
+          0.33333333333333337,
+          1,
+          -0.0,
+          -0.0,
+          -0.0
+        ],
+        "jump_speed": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "gravity_hold": [
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481
+        ],
+        "gravity_fall": [
+          0.6666666666666666,
+          2,
+          0,
+          1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          0.666666666666667,
+          0.6666666666666665,
+          0,
+          -1,
+          1,
+          0,
+          1,
+          0.33333333333333304,
+          0.6666666666666667,
+          0.3333333333333335,
+          0.6666666666666666,
+          0.6666666666666666,
+          0.6666666666666666,
+          0.33333333333333337,
+          0.6666666666666667,
+          0.33333333333333326,
+          1.0,
+          0.3333333333333335,
+          0.6666666666666665,
+          0.33333333333333304,
+          0,
+          1,
+          0,
+          1,
+          0.6666666666666665,
+          0.6666666666666667,
+          0.6666666666666666,
+          0.6666666666666666,
+          0,
+          1,
+          1,
+          0,
+          0.666666666666667,
+          0.6666666666666665,
+          -1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          1,
+          0.3333333333333333,
+          2,
+          1,
+          -1,
+          2,
+          0,
+          0.6666666666666665,
+          0.33333333333333304,
+          1,
+          0,
+          1,
+          1,
+          0,
+          0
+        ],
+        "jump_speed_fast": [
+          6,
+          6,
+          5,
+          6,
+          5,
+          5
+        ],
+        "gravity_hold_fast": [
+          0.21212121212121213,
+          0.17965367965367965,
+          0.21861471861471862,
+          0.24891774891774893,
+          0.27705627705627706,
+          0.21645021645021645,
+          0.17316017316017315,
+          0.22077922077922077,
+          0.17316017316017315,
+          0.21645021645021645,
+          0.27705627705627706,
+          0.24891774891774893,
+          0.21861471861471862,
+          0.17965367965367965,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.17965367965367965,
+          0.21212121212121213,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696
+        ],
+        "air_accel": [
+          0.11471861471861472,
+          0.08225108225108226,
+          0.05194805194805195,
+          0.1341991341991342,
+          0.0,
+          0.08225108225108226,
+          0.11904761904761904,
+          0.06060606060606061,
+          0.0,
+          0.0,
+          0.06060606060606061,
+          0.07575757575757576,
+          0.05844155844155844,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.11904761904761904,
+          0.06060606060606061
+        ],
+        "brake_accel": [
+          0,
+          0,
+          1,
+          -1,
+          0.3333333333333335,
+          0,
+          -1,
+          0,
+          0,
+          0,
+          0.6666666666666667,
+          0.3333333333333333,
+          1,
+          -1,
+          0,
+          1,
+          0,
+          0.3333333333333335,
+          -0.0,
+          0.33333333333333326,
+          -0.0,
+          1,
+          -1,
+          1,
+          0,
+          0.33333333333333326,
+          0.0,
+          0.0,
+          0.0,
+          -1,
+          0,
+          1,
+          -1,
+          0.3333333333333335,
+          -0.0,
+          0.33333333333333326,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.33333333333333337,
+          0.3333333333333333,
+          0.6666666666666666,
+          1
+        ]
+      },
+      "fast_jump": false,
+      "bouncing": false,
+      "timing": {
+        "frames_until_action": 8,
+        "action_horizon_frames": 8,
+        "total_reaction_horizon_frames": 16,
+        "scheduled_action": "jump",
+        "scheduled_first_frame_action": "jump"
+      },
+      "expected_next": {
+        "x": 1758,
+        "center_x": 1766,
+        "y": 132,
+        "horizontal_speed_px_per_frame": 0,
+        "vertical_speed_px_per_frame": 2,
+        "grounded": false,
+        "swimming": false,
+        "landed_this_frame": false,
+        "jump_button_held": true,
+        "can_start_jump": false,
+        "jump_requires_release": false,
+        "jump_phase": "rising",
+        "powerup_status": "small"
+      }
+    },
+    "episode2_decision105": {
+      "history": [
+        {
+          "frame": 817,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1348,
+          "y": 99,
+          "vx": 1,
+          "vy": -5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1231,
+            1487
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1487,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1232,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1231,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1487,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1231,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1487,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 818,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1350,
+          "y": 94,
+          "vx": 2,
+          "vy": -5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1233,
+            1489
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1489,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1233,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1233,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1489,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1233,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1489,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 819,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1351,
+          "y": 89,
+          "vx": 1,
+          "vy": -5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1234,
+            1490
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1490,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1234,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1234,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1490,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1234,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1490,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 820,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1352,
+          "y": 84,
+          "vx": 1,
+          "vy": -5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1235,
+            1491
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1491,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1235,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1235,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1491,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1235,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1491,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 821,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 79,
+          "vx": 1,
+          "vy": -5,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1236,
+            1492
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1492,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1236,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1236,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1492,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1236,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1492,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 822,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1236,
+            1492
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1492,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1236,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1236,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1492,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1236,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1492,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 823,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1354,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 824,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1354,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 825,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1354,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 826,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 84,
+          "vx": -1,
+          "vy": 5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 827,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 89,
+          "vx": 0,
+          "vy": 5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 828,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 93,
+          "vx": 0,
+          "vy": 4,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 829,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 98,
+          "vx": 0,
+          "vy": 5,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 830,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 102,
+          "vx": 0,
+          "vy": 4,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 831,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 105,
+          "vx": 0,
+          "vy": 3,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        },
+        {
+          "frame": 832,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1353,
+          "y": 109,
+          "vx": 0,
+          "vy": 4,
+          "grounded": false,
+          "swimming": false,
+          "previous_action": "right_run_jump",
+          "motion_reliable": true,
+          "known_x": [
+            1237,
+            1493
+          ],
+          "blocks": [
+            {
+              "left": 1280,
+              "right": 1408,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1456,
+              "right": 1493,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1237,
+              "right": 1280,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1237,
+              "right": 1376,
+              "bottom": 47,
+              "top": 63
+            },
+            {
+              "left": 1424,
+              "right": 1493,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [],
+          "height": 16,
+          "terminal": false,
+          "score": 0
+        }
+      ],
+      "samples": {
+        "run_accel": [
+          0.0,
+          0.0,
+          0.6666666666666666,
+          0.0,
+          0.0,
+          0.0,
+          0.3333333333333335,
+          0.0,
+          0.0,
+          0.0,
+          0.33333333333333326,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          -1,
+          1,
+          0.0,
+          0.33333333333333337,
+          0.33333333333333326,
+          0.0,
+          0.0,
+          0.0,
+          0.3333333333333335,
+          0.0,
+          0.0,
+          0.0,
+          0.33333333333333326,
+          0.3333333333333335,
+          0,
+          0,
+          0,
+          1,
+          0.0,
+          0.3333333333333333,
+          -0.3333333333333333,
+          0.3333333333333333,
+          -1,
+          0,
+          0,
+          0.3333333333333333,
+          0.0,
+          0.3333333333333333,
+          0.0,
+          0,
+          0,
+          0,
+          0.3333333333333335,
+          0
+        ],
+        "friction": [
+          0.06060606060606061,
+          0.08225108225108226,
+          0.11255411255411256,
+          0.15800865800865802,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.06060606060606061,
+          -0.0,
+          0.06060606060606061,
+          0.09740259740259741,
+          0.03896103896103896,
+          0.09740259740259741,
+          0.0367965367965368,
+          0.04329004329004329,
+          0.017316017316017316,
+          0.03896103896103896,
+          0.08225108225108226,
+          0.1341991341991342,
+          0.1341991341991342,
+          0.08225108225108226,
+          0.03896103896103896,
+          0.017316017316017316,
+          0.04329004329004329,
+          0.0367965367965368,
+          0.09740259740259741,
+          0.03896103896103896,
+          0.021645021645021644,
+          0.03896103896103896,
+          0.05411255411255411
+        ],
+        "walk_accel": [
+          1,
+          1,
+          -1,
+          -1,
+          1,
+          -1,
+          0.3333333333333333,
+          -0.3333333333333333,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.33333333333333326,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0.0,
+          0.0,
+          -0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333,
+          -0.0,
+          -0.0,
+          -1
+        ],
+        "jump_speed": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "gravity_hold": [
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481
+        ],
+        "gravity_fall": [
+          0.6666666666666665,
+          0.6666666666666667,
+          1.0,
+          0.6666666666666665,
+          0.666666666666667,
+          0.6666666666666665,
+          0,
+          0,
+          0,
+          2,
+          0.33333333333333326,
+          1.0,
+          0.0,
+          1.0,
+          0.33333333333333326,
+          0.6666666666666667,
+          0.3333333333333335,
+          0.6666666666666665,
+          0.6666666666666665,
+          0.6666666666666665,
+          1,
+          1,
+          0,
+          1,
+          0.3333333333333335,
+          1.0,
+          0.6666666666666666,
+          1.3333333333333335,
+          -1,
+          0,
+          1,
+          1,
+          1,
+          0,
+          0,
+          1,
+          1,
+          0.6666666666666666,
+          0.6666666666666666,
+          0.3333333333333335,
+          0.6666666666666667,
+          0,
+          1,
+          0,
+          0.3333333333333333,
+          0.3333333333333333,
+          0.6666666666666666,
+          0.6666666666666667,
+          0,
+          1,
+          1,
+          -1,
+          2,
+          0,
+          1.333333333333333,
+          0.6666666666666667,
+          0.6666666666666667,
+          0.6666666666666667,
+          0.6666666666666666,
+          1.3333333333333335,
+          0.6666666666666667,
+          1.0,
+          0.33333333333333304,
+          0.6666666666666665
+        ],
+        "jump_speed_fast": [
+          6,
+          6,
+          5,
+          6
+        ],
+        "gravity_hold_fast": [
+          0.21212121212121213,
+          0.17965367965367965,
+          0.21861471861471862,
+          0.24891774891774893,
+          0.27705627705627706,
+          0.21645021645021645,
+          0.17316017316017315,
+          0.22077922077922077,
+          0.17316017316017315,
+          0.21645021645021645,
+          0.27705627705627706,
+          0.24891774891774893,
+          0.21861471861471862,
+          0.17965367965367965,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.21212121212121213,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.21861471861471862,
+          0.24891774891774893,
+          0.27705627705627706,
+          0.21645021645021645,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696
+        ],
+        "air_accel": [
+          0.11471861471861472,
+          0.08225108225108226,
+          0.05194805194805195,
+          0.1341991341991342,
+          0.0,
+          0.14285714285714285,
+          0.11471861471861472,
+          0.07575757575757576,
+          0.06493506493506493,
+          0.07575757575757576,
+          0.17532467532467533,
+          0.08225108225108226,
+          0.07575757575757576,
+          0.05411255411255411,
+          0.006493506493506494,
+          0.0,
+          0.05411255411255411,
+          0.08225108225108226,
+          0.05844155844155844,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.06060606060606061,
+          0.06060606060606061,
+          0.07575757575757576,
+          0.11904761904761904,
+          0.15800865800865802,
+          0.11255411255411256,
+          0.08225108225108226,
+          0.06060606060606061
+        ],
+        "brake_accel": [
+          0,
+          0,
+          1,
+          -1,
+          0.3333333333333335,
+          0,
+          1,
+          -1,
+          0.33333333333333304,
+          -0.0,
+          0.3333333333333335,
+          0,
+          0,
+          0,
+          0.3333333333333333,
+          1,
+          1,
+          1
+        ]
+      },
+      "fast_jump": false,
+      "bouncing": false,
+      "timing": {
+        "frames_until_action": 8,
+        "action_horizon_frames": 8,
+        "total_reaction_horizon_frames": 16,
+        "scheduled_action": "right_run_jump",
+        "scheduled_first_frame_action": "right_run_jump"
+      },
+      "expected_next": {
+        "x": 1359,
+        "center_x": 1367,
+        "y": 132,
+        "horizontal_speed_px_per_frame": 1,
+        "vertical_speed_px_per_frame": 2,
+        "grounded": false,
+        "swimming": false,
+        "landed_this_frame": false,
+        "jump_button_held": true,
+        "can_start_jump": false,
+        "jump_requires_release": false,
+        "jump_phase": "rising",
+        "powerup_status": "small"
+      }
+    },
+    "episode3_decision160": {
+      "history": [
+        {
+          "frame": 1257,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1742,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1630,
+            1886
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1630,
+              "right": 1632,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1630,
+              "right": 1886,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1630,
+              "right": 1886,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1806,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1829,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1258,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1744,
+          "y": 79,
+          "vx": 2,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1632,
+            1888
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1632,
+              "right": 1888,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1632,
+              "right": 1888,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1806,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1828,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1259,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1744,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1632,
+            1888
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1632,
+              "right": 1888,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1632,
+              "right": 1888,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1805,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1828,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1260,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1745,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1804,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1827,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1261,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1745,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1804,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1827,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1262,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1745,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1803,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1826,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1263,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1744,
+          "y": 79,
+          "vx": -1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1803,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1825,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1264,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1744,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "left",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1802,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1825,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1265,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1743,
+          "y": 79,
+          "vx": -1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1801,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1824,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1266,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1743,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1801,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1823,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1267,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1743,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1633,
+            1889
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1889,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1633,
+              "right": 1889,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1800,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1823,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1268,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1744,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1634,
+            1890
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1890,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1634,
+              "right": 1890,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1634,
+              "right": 1890,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1799,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1822,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1269,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1744,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1634,
+            1890
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1890,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1634,
+              "right": 1890,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1634,
+              "right": 1890,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1799,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1822,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1270,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1744,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1634,
+            1890
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1890,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1634,
+              "right": 1890,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1634,
+              "right": 1890,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1798,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1821,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1271,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1745,
+          "y": 79,
+          "vx": 1,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1635,
+            1891
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1891,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1635,
+              "right": 1891,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1635,
+              "right": 1891,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1798,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1820,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        },
+        {
+          "frame": 1272,
+          "level": [
+            1,
+            1,
+            1
+          ],
+          "x": 1745,
+          "y": 79,
+          "vx": 0,
+          "vy": 0,
+          "grounded": true,
+          "swimming": false,
+          "previous_action": "right",
+          "motion_reliable": true,
+          "known_x": [
+            1635,
+            1891
+          ],
+          "blocks": [
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 191,
+              "top": 207
+            },
+            {
+              "left": 1696,
+              "right": 1712,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1744,
+              "right": 1760,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1792,
+              "right": 1808,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1888,
+              "right": 1891,
+              "bottom": 127,
+              "top": 143
+            },
+            {
+              "left": 1635,
+              "right": 1891,
+              "bottom": 63,
+              "top": 79
+            },
+            {
+              "left": 1635,
+              "right": 1891,
+              "bottom": 47,
+              "top": 63
+            }
+          ],
+          "actors": [
+            {
+              "identity": "0:goomba",
+              "kind": "goomba",
+              "x": 1797,
+              "y": 71
+            },
+            {
+              "identity": "1:goomba",
+              "kind": "goomba",
+              "x": 1820,
+              "y": 71
+            }
+          ],
+          "height": 16,
+          "terminal": false,
+          "score": 100
+        }
+      ],
+      "samples": {
+        "run_accel": [
+          0,
+          0,
+          0,
+          0,
+          0.3333333333333333,
+          0.0,
+          0.3333333333333333,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.6666666666666666,
+          0.0,
+          0.0,
+          0.0,
+          0.3333333333333335,
+          0.0,
+          0.0,
+          0.0,
+          0.33333333333333326,
+          0.0,
+          0.3333333333333335,
+          1,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          -1,
+          1,
+          0,
+          0,
+          -1,
+          0.0,
+          0.3333333333333335,
+          0.3333333333333335,
+          1,
+          -1,
+          0,
+          0,
+          0,
+          0,
+          0.0,
+          0.0,
+          0.3333333333333335,
+          0,
+          1,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0.0,
+          0.0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.0,
+          0.3333333333333335,
+          1
+        ],
+        "friction": [
+          0.06060606060606061,
+          0.08225108225108226,
+          0.11255411255411256,
+          0.15800865800865802,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.06060606060606061,
+          -0.0,
+          0.06060606060606061,
+          0.07575757575757576,
+          0.08225108225108226,
+          0.09740259740259741,
+          0.09740259740259741,
+          0.09740259740259741,
+          0.09956709956709957
+        ],
+        "walk_accel": [
+          1,
+          1,
+          0,
+          1,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          0.3333333333333333,
+          -1,
+          1,
+          0,
+          0.33333333333333337,
+          -0.33333333333333337,
+          1,
+          0,
+          -1,
+          1,
+          0,
+          0.33333333333333337,
+          -1,
+          1,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1,
+          -1,
+          -1,
+          1,
+          -1,
+          1,
+          -1,
+          0.3333333333333333,
+          0.0,
+          0.33333333333333337,
+          0.0,
+          0.0,
+          0.33333333333333326,
+          -0.0,
+          0.3333333333333333,
+          -0.0,
+          -0.0,
+          1,
+          -0.0,
+          -1,
+          0,
+          1,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "jump_speed": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "gravity_hold": [
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.16017316017316016,
+          0.17316017316017315,
+          0.15584415584415584,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.19696969696969696,
+          0.19696969696969696,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481,
+          0.23809523809523808,
+          0.17316017316017315,
+          0.2012987012987013,
+          0.19047619047619047,
+          0.19696969696969696,
+          0.1406926406926407,
+          0.19480519480519481,
+          0.21212121212121213,
+          0.17965367965367965,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.21861471861471862,
+          0.19480519480519481,
+          0.19480519480519481
+        ],
+        "gravity_fall": [
+          -1,
+          1.0,
+          0.33333333333333326,
+          1.0,
+          0.3333333333333333,
+          0.6666666666666666,
+          0.6666666666666667,
+          1.0,
+          0.6666666666666665,
+          0.3333333333333335,
+          0.6666666666666665,
+          0.6666666666666665,
+          -1,
+          0,
+          0.3333333333333333,
+          0.3333333333333333,
+          0.6666666666666666,
+          1,
+          0,
+          1,
+          2,
+          0,
+          0,
+          0.3333333333333335,
+          0.6666666666666665,
+          1.0,
+          1,
+          0,
+          0,
+          1,
+          0,
+          1,
+          0.6666666666666665,
+          0.6666666666666667,
+          0.6666666666666666,
+          0.6666666666666666,
+          0,
+          1,
+          1,
+          0,
+          0.666666666666667,
+          0.6666666666666665,
+          -1,
+          0,
+          1,
+          0,
+          1,
+          0.6666666666666665,
+          1.0,
+          0.6666666666666667,
+          1.0,
+          0,
+          1,
+          1,
+          1,
+          0.6666666666666665,
+          0.6666666666666665,
+          0,
+          1,
+          1,
+          0,
+          2,
+          0.666666666666667,
+          0.9999999999999996
+        ],
+        "jump_speed_fast": [
+          6,
+          6,
+          6,
+          6,
+          6
+        ],
+        "gravity_hold_fast": [
+          0.21212121212121213,
+          0.17965367965367965,
+          0.21861471861471862,
+          0.24891774891774893,
+          0.27705627705627706,
+          0.21645021645021645,
+          0.17316017316017315,
+          0.22077922077922077,
+          0.17316017316017315,
+          0.21645021645021645,
+          0.27705627705627706,
+          0.24891774891774893,
+          0.21861471861471862,
+          0.17965367965367965,
+          0.21212121212121213
+        ],
+        "air_accel": [
+          0.11471861471861472,
+          0.13636363636363635,
+          0.1406926406926407,
+          0.1341991341991342,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.12121212121212122,
+          0.07575757575757576,
+          0.11904761904761904,
+          0.09740259740259741,
+          0.09740259740259741,
+          0.09956709956709957,
+          0.0367965367965368,
+          0.08225108225108226,
+          0.05844155844155844,
+          0.07575757575757576,
+          0.06060606060606061,
+          0.0,
+          0.06060606060606061,
+          0.07575757575757576,
+          0.11904761904761904,
+          0.15800865800865802,
+          0.17316017316017315,
+          0.15800865800865802,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.07575757575757576,
+          0.05844155844155844,
+          0.05844155844155844,
+          0.021645021645021644,
+          0.03896103896103896,
+          0.017316017316017316,
+          0.11904761904761904,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.06060606060606061,
+          0.0,
+          0.0,
+          0.06060606060606061,
+          0.07575757575757576,
+          0.11904761904761904,
+          0.07575757575757576,
+          0.06493506493506493,
+          0.07575757575757576,
+          0.17532467532467533
+        ],
+        "brake_accel": [
+          -1,
+          0,
+          1,
+          0,
+          0,
+          1,
+          0.3333333333333333,
+          0.6666666666666666,
+          0,
+          0,
+          0,
+          0,
+          1,
+          -0.0,
+          0.33333333333333304,
+          -0.0,
+          0.3333333333333335,
+          1,
+          0,
+          1,
+          -1,
+          1,
+          -0.3333333333333335,
+          0.3333333333333335,
+          -0.0,
+          0.33333333333333326,
+          -0.0,
+          0.33333333333333337,
+          0.3333333333333333,
+          0.3333333333333333,
+          1,
+          0,
+          -1,
+          -0.0,
+          0.6666666666666667,
+          -0.0,
+          0.6666666666666666,
+          1
+        ],
+        "stomp_speed": [
+          4
+        ]
+      },
+      "fast_jump": null,
+      "bouncing": false,
+      "timing": {
+        "frames_until_action": 8,
+        "action_horizon_frames": 8,
+        "total_reaction_horizon_frames": 16,
+        "scheduled_action": "right_run_jump",
+        "scheduled_first_frame_action": "right_run_jump"
+      },
+      "expected_next": {
+        "x": 1751,
+        "center_x": 1759,
+        "y": 109,
+        "horizontal_speed_px_per_frame": 1,
+        "vertical_speed_px_per_frame": 4,
+        "grounded": false,
+        "swimming": false,
+        "landed_this_frame": false,
+        "jump_button_held": true,
+        "can_start_jump": false,
+        "jump_requires_release": false,
+        "jump_phase": "rising",
+        "powerup_status": "small"
+      }
+    }
+  }
+}

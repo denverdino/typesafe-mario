@@ -43,197 +43,176 @@ def scene(request):
         env.close()
 
 
-def forecast(*args, **kwargs):
-    from typesafe_mario.prediction import forecast_actions
+def test_prediction_has_no_emulator_access_or_side_effects(scene, monkeypatch):
+    from prediction_helpers import predicted
 
-    return forecast_actions(*args, **kwargs)
+    env, parser, snapshot = scene
+    ram, history = bytes(env.unwrapped.ram), copy.deepcopy(vars(parser))
 
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Prediction must not advance or snapshot the emulator")
 
-def test_rollouts_skip_unused_geometry_without_changing_forecasts(scene, monkeypatch):
-    env, p, s = scene
-    original_grid = MarioStateParser._extract_collision_grid
-    scans = []
-
-    def counted_grid(self, ram, x):
-        scans.append(x)
-        return original_grid(self, ram, x)
-
-    monkeypatch.setattr(MarioStateParser, "_extract_collision_grid", counted_grid)
-    result = forecast(env, p, s, tuple(Action))
-    # Only committed frames need terrain for selecting routes at application.
-    # Candidate rollouts use native collisions, motion and tracked actors.
-    assert len(scans) <= 8
-    parse = MarioStateParser.parse
-
-    def full_parse(self, *args, **kwargs):
-        kwargs["include_geometry"] = True
-        return parse(self, *args, **kwargs)
-
-    monkeypatch.setattr(MarioStateParser, "parse", full_parse)
-    reference = forecast(env, p, s, tuple(Action))
-    actual = {k: v for k, v in result.prediction.items() if k != "compute_ms"}
-    expected = {k: v for k, v in reference.prediction.items() if k != "compute_ms"}
-    assert actual == expected
-    assert result.prediction_traces == reference.prediction_traces
+    monkeypatch.setattr(env, "step", forbidden)
+    monkeypatch.setattr(env.unwrapped, "dump_state", forbidden)
+    monkeypatch.setattr(env.unwrapped, "load_state", forbidden)
+    result = predicted(snapshot)
+    assert result.prediction["backend"] == "observation_dynamics"
+    assert bytes(env.unwrapped.ram) == ram and vars(parser) == history
+    assert all(f["risk"] not in ("safe", "unsafe") for f in result.prediction["action_forecasts"])
 
 
-@pytest.mark.parametrize("recovery", [False, True])
-def test_identical_action_sequences_share_simulation_but_keep_all_branches(
-    scene, monkeypatch, recovery
-):
-    env, p, s = scene
-    s = replace(
-        s,
-        frames_until_action=0,
-        recovery={"active": recovery, "no_progress_frames": 200},
-    )
-    steps = []
-    original_step = env.step
+def test_causal_validation_waits_for_actual_selected_actions(scene):
+    from prediction_helpers import predicted
 
-    def counted_step(action):
-        steps.append(action)
-        return original_step(action)
+    from typesafe_mario.observation import observe
+    from typesafe_mario.prediction import Predictor
 
-    monkeypatch.setattr(env, "step", counted_step)
-    result = forecast(env, p, s, (Action.RIGHT_RUN_JUMP,))
-    branches = result.prediction["action_forecasts"][0]["continuations"]
-    names = {"repeat", "run_jump"}
-    if recovery:
-        names |= {"walk", "release_then_jump", "repeat_twice_then_jump", "hold_jump_then_run"}
-    assert set(branches) == names
-    assert branches["repeat"] == branches["run_jump"]
-    if recovery:
-        assert branches["repeat"] == branches["repeat_twice_then_jump"]
-    assert {t["continuation"] for t in result.prediction_traces[1:]} == names
-    assert len(steps) < sum(b["evaluated_through_frame"] for b in branches.values())
-    # Consumers must not be able to change another branch through shared dicts.
-    branches["repeat"]["end_player"]["x"] = -100
-    assert branches["run_jump"]["end_player"]["x"] != -100
-
-
-def test_forecasts_show_collision_and_early_braking_across_multiple_enemies(scene):
-    env, p, s = scene
-    result = forecast(env, p, s, (Action.RIGHT_RUN_JUMP, Action.LEFT))
-    prediction = result.prediction
-    assert prediction["committed_future"]["player"]["x"] == 558
-    assert prediction["application_frame"] == 8
-    by_action = {f["action"]: f for f in prediction["action_forecasts"]}
-    run = by_action["right_run_jump"]["continuations"]["repeat"]
-    assert run["outcome"] == "death"
-    assert run["terminal_frame"] == 36
-    assert run["end_player"]["x"] == 642
-    assert len(run["enemy_encounters"]) >= 2
-    assert len([e for e in run["enemy_encounters"] if e["kind"] == "goomba"]) == 2
-    brake = by_action["left"]["continuations"]["repeat"]
-    assert brake["outcome"] == "survived_horizon"
-    assert brake["end_player"]["grounded"]
-    assert brake["landings"]
-    # Switching straight back to run-jumps survives 48 frames but then hits
-    # the next enemy before landing. The extended flight must expose that.
-    premature_jump = by_action["left"]["continuations"]["run_jump"]
-    assert premature_jump["outcome"] == "death"
-    assert premature_jump["terminal_frame"] == 70
-    assert premature_jump["end_player"]["x"] == 737
-    assert "prediction_traces" not in result.to_state()
-    assert result.to_debug_state()["prediction_traces"]
-
-
-def test_forecasting_restores_ram_parser_rewards_and_time_limit(scene):
-    from typesafe_mario.checkpoint import Checkpoint
-
-    env, p, s = scene
-    cp = Checkpoint.capture(env, p, s)
-    old_parser = copy.deepcopy(vars(p))
-    ram = bytes(env.unwrapped.ram)
-    before = cp.layer_state
-    forecast(env, p, s, tuple(Action))
-    after = Checkpoint.capture(env, p, s)
-    assert bytes(env.unwrapped.ram) == ram
-    assert after.layer_state == before
-    assert vars(p) == old_parser
-    # Actual next-frame transition and reward must also remain identical.
-    actual = env.step(ACTION_TO_INDEX[Action.RIGHT_RUN_JUMP])
-    actual_ram = bytes(env.unwrapped.ram)
-    cp.restore(env)
-    expected = env.step(ACTION_TO_INDEX[Action.RIGHT_RUN_JUMP])
-    assert actual[1:] == expected[1:]
-    assert bytes(env.unwrapped.ram) == actual_ram
-
-
-def test_simulation_error_restores_before_propagating(scene, monkeypatch):
-    env, p, s = scene
-    ram = bytes(env.unwrapped.ram)
-    original = env.step
-
-    def failing(action):
-        original(action)
-        raise RuntimeError("simulation failed")
-
-    monkeypatch.setattr(env, "step", failing)
-    with pytest.raises(RuntimeError, match="simulation failed"):
-        forecast(env, p, s, (Action.RIGHT,))
-    assert bytes(env.unwrapped.ram) == ram
-
-
-def test_missing_native_backend_reports_unknown():
-    from types import SimpleNamespace
-
-    p = MarioStateParser()
-    s = p.parse({})
-    result = forecast(SimpleNamespace(unwrapped=SimpleNamespace()), p, s, tuple(Action))
-    assert result.to_state()["prediction"]["status"] == "unavailable"
-    assert result.to_state()["prediction"]["action_forecasts"] == []
-
-
-@pytest.mark.parametrize("scene", [280], indirect=True)
-def test_candidate_rearms_jump_and_forecasts_exact_first_cycle(scene):
-    env, p, s = scene
-    assert s.grounded and s.previous_action == "right_run_jump"
-    s = replace(s, frames_until_action=0, scheduled_action=None, scheduled_first_frame_action=None)
-    result = forecast(env, p, s, (Action.RIGHT_RUN_JUMP,))
-    branch = result.prediction["action_forecasts"][0]["continuations"]["repeat"]
-    assert branch["cycle_end_player"]["x"] == 510
-    assert branch["cycle_end_player"]["height_y"] == 112
-
-
-@pytest.mark.parametrize("scene", [328], indirect=True)
-def test_death_in_committed_prefix_cannot_be_fixed_by_future_action(scene):
-    env, p, s = scene
-    result = forecast(env, p, s, tuple(Action))
-    assert result.prediction["committed_future"]["outcome"] == "death"
-    assert result.prediction["committed_future"]["frames"] == 4
-    assert result.prediction["action_forecasts"] == []
-
-
-@pytest.mark.parametrize("scene", [328], indirect=True)
-@pytest.mark.parametrize("delay", [0, 8])
-def test_damage_is_visible_in_prefix_or_candidate_even_when_mario_survives(scene, delay):
-    env, p, s = scene
-    env.unwrapped.ram[0x756] = 1  # Tall Mario can survive the recorded collision.
-    env.unwrapped.ram[0x754] = 0
-    s = replace(s, status="tall", frames_until_action=delay)
-    result = forecast(env, p, s, (Action.RIGHT_RUN_JUMP,))
-    scope = (
-        result.prediction["committed_future"]
-        if delay
-        else (result.prediction["action_forecasts"][0]["continuations"]["repeat"])
-    )
-    assert scope.get("risk") == "unsafe"
-    player = scope["player"] if delay else scope["end_player"]
-    assert player["powerup_status"] == "small"
-    assert {"frame": 4, "type": "powerup_change", "from": "tall", "to": "small"} in scope["events"]
-    assert env.unwrapped.ram[0x756] == 1
-
-
-def test_forecast_prefix_matches_observed_execution_at_application(scene):
-    env, p, s = scene
-    result = forecast(env, p, s, (Action.LEFT,))
+    env, parser, snapshot = scene
+    p = Predictor()
+    p.observe(observe(snapshot))
+    result = predicted(snapshot, predictor=p).prediction
+    assert p.validation()["samples"] == 0
     for _ in range(8):
         _, reward, _, _, info = env.step(ACTION_TO_INDEX[Action.RIGHT_RUN_JUMP])
-        applied = p.parse(
+        snapshot = parser.parse(
             info, env.unwrapped.ram, previous_action="right_run_jump", previous_reward=reward
         )
-    predicted = result.prediction["committed_future"]
-    assert predicted["player"]["x"] == applied.x
-    assert predicted["player"]["height_y"] == applied.y
-    assert predicted["enemies"] == [t.to_state() for t in applied.enemy_tracks]
+        p.observe(observe(snapshot))
+    p.expect(result, Action.LEFT, application_frame=snapshot.frame_index)
+    for _ in range(8):
+        _, reward, _, _, info = env.step(ACTION_TO_INDEX[Action.LEFT])
+        snapshot = parser.parse(
+            info, env.unwrapped.ram, previous_action="left", previous_reward=reward
+        )
+        p.observe(observe(snapshot))
+    assert p.validation()["samples"] == 1
+    assert p.validation()["mean_absolute_x_error"] >= 0
+
+
+def test_grounded_held_jump_releases_then_represses_in_estimate():
+    from test_observation_prediction import floor_scene
+
+    from typesafe_mario.prediction import Predictor
+
+    p = Predictor()
+    held = floor_scene(previous_action="jump", vx=0)
+    released = replace(held, previous_action="noop")
+    a = p.forecast(held, (Action.JUMP,), cycle=8)["action_forecasts"][0]["first_cycle"]
+    b = p.forecast(released, (Action.JUMP,), cycle=8)["action_forecasts"][0]["first_cycle"]
+    assert 79 < a["y"] < b["y"]
+
+
+def test_forecasts_do_not_need_native_snapshot_support():
+    from prediction_helpers import predicted
+
+    result = predicted(MarioStateParser().parse({}))
+    assert result.prediction["status"] == "estimated"
+    assert all("unobserved_terrain" in f["unknowns"] for f in result.prediction["action_forecasts"])
+
+
+def test_recorded_first_enemy_failure_warns_early_and_resolves_ceiling():
+    from typesafe_mario.observation import observe
+    from typesafe_mario.prediction import Predictor
+
+    pytest.importorskip("gym_super_mario_bros")
+    fixture = json.loads(
+        (Path(__file__).parent / "fixtures/world1-1-ceiling-risk.json").read_text()
+    )
+    env = create_mario_env(fixture["env_id"], render_mode="rgb_array")
+    try:
+        _, info = env.reset(seed=fixture["seed"])
+        parser, predictor = MarioStateParser(), Predictor()
+        s = parser.parse(info, env.unwrapped.ram)
+        predictor.observe(observe(s))
+        forecasts = {}
+        for action, count in fixture["buttons"]:
+            for _ in range(count):
+                _, reward, _, _, info = env.step(ACTION_TO_INDEX[Action(action)])
+                s = parser.parse(
+                    info, env.unwrapped.ram, previous_action=action, previous_reward=reward
+                )
+                predictor.observe(observe(s))
+                if s.frame_index in (80, 88):
+                    forecasts[s.frame_index] = predictor.forecast(
+                        observe(s),
+                        tuple(Action),
+                        cycle=8,
+                        delay=8,
+                        scheduled_action=Action.RIGHT_RUN_JUMP,
+                    )
+        assert s.dead and s.x == 315  # Exact recorded execution, no counterfactual trials.
+        assert forecasts[80]["risk_control"]["candidate_actions"] == ["left"]
+        assert forecasts[88]["committed_future"]["y"] < 117
+        forward = next(
+            f for f in forecasts[88]["action_forecasts"] if f["action"] == "right_run_jump"
+        )
+        assert forward["control_risk"]["possible_contact"]
+    finally:
+        env.close()
+
+
+@pytest.mark.parametrize(
+    "name,frame,kept,rejected",
+    [
+        ("world1-1-gap-release", 664, "right_run_jump", "right"),
+        ("world1-2-falling-enemy", 1072, "left", "right"),
+    ],
+)
+def test_recorded_failure_context_keeps_a_preventive_action(name, frame, kept, rejected):
+    from typesafe_mario.observation import observe
+    from typesafe_mario.prediction import Predictor
+
+    pytest.importorskip("gym_super_mario_bros")
+    fixture = json.loads((Path(__file__).parent / f"fixtures/{name}.json").read_text())
+    buttons = [Action(a) for a, count in fixture["buttons"] for _ in range(count)]
+    env = create_mario_env(fixture["env_id"], render_mode="rgb_array")
+    try:
+        _, info = env.reset(seed=fixture["seed"])
+        parser, predictor = MarioStateParser(), Predictor()
+        s = parser.parse(info, env.unwrapped.ram)
+        predictor.observe(observe(s))
+        for action in buttons[:frame]:
+            _, reward, _, _, info = env.step(ACTION_TO_INDEX[action])
+            s = parser.parse(
+                info, env.unwrapped.ram, previous_action=action, previous_reward=reward
+            )
+            predictor.observe(observe(s))
+        result = predictor.forecast(
+            observe(s), tuple(Action), cycle=8, delay=8, scheduled_action=buttons[frame]
+        )
+        assert kept in result["risk_control"]["candidate_actions"]
+        assert rejected not in result["risk_control"]["candidate_actions"]
+    finally:
+        env.close()
+
+
+def test_recorded_quantized_apices_do_not_make_visible_wall_unclimbable():
+    from typesafe_mario.observation import observe
+    from typesafe_mario.prediction import Predictor
+
+    pytest.importorskip("gym_super_mario_bros")
+    fixture = json.loads((Path(__file__).parent / "fixtures/world1-2-held-apex.json").read_text())
+    env = create_mario_env(fixture["env_id"], render_mode="rgb_array")
+    try:
+        _, info = env.reset(seed=fixture["seed"])
+        parser, p = MarioStateParser(), Predictor()
+        s = parser.parse(info, env.unwrapped.ram)
+        p.observe(observe(s))
+        for name, count in fixture["buttons"]:
+            for _ in range(count):
+                a = Action(name)
+                _, reward, _, _, info = env.step(ACTION_TO_INDEX[a])
+                s = parser.parse(info, env.unwrapped.ram, previous_action=a, previous_reward=reward)
+                p.observe(observe(s))
+        assert (s.x, s.y) == (471, 79)
+        assert p.dynamics.value("gravity_hold") < 0.24
+        result = p.forecast(
+            observe(s), tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT_RUN
+        )
+        plan = next(
+            b["continuation"] for b in result["action_forecasts"] if b["action"] == "right_jump"
+        )
+        assert plan["progress"] > 32
+        assert plan["status"] == "estimated_viable"
+    finally:
+        env.close()

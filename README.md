@@ -31,166 +31,246 @@ the same cycle semantics.
 NES emulator -> telemetry/RAM parser -> structured JSON -> Jev Choice -> controller input
 ```
 
-### Multi-enemy motion and candidate forecasts
+### Observation-driven prediction
 
-The parser tracks all five active enemy slots independently, including enemies
-behind or above Mario. `enemy_tracks` provides stable spawn identities, observed
-positions, floating-point velocities over up to eight frame intervals, motion
-phases and confidence. A newly seen enemy has unknown velocity. Inactive RAM
-slots are confirmed removals; missing RAM retains uncertain tracks for at most
-eight frames. Slot reuse, level transitions and discontinuities start new tracks.
-Positions use world x increasing right and screen y increasing down.
+The predictor receives an explicit whitelist of current structured observations:
+Mario position and measured motion, visible actors, visible solid tiles, current
+movement mode and actual previous buttons. The camera origin is derived from world
+position minus screen position. Geometry covers the visible viewport, including
+space behind Mario for retreat; offscreen actors, exact RAM velocity, internal enemy states and plant
+countdowns are excluded from both prediction and the TypeSafe request. This remains
+telemetry-assisted perception, not a screenshot-only agent.
 
-Before each model request, the native checkpoint predictor simulates the already
-committed buttons, then every candidate action. Each candidate runs for one normal
-cycle and has two explicit continuations: `repeat` repeats the candidate, while
-`run_jump` uses forward running jumps from the next boundary. Each path covers
-48 frames after application (at least two full cycles for longer cadences).
-If still airborne at that boundary, simulation continues for up to 48 extra frames
-until landing or termination. An unresolved flight is `unknown`, never `safe`;
-this prevents a fall into a pit from appearing safe just before the death flag.
-Recovery or a nearby springboard extends this to 96 frames and adds walking,
-release-then-jump, two-cycle repeat-then-jump and vertical-jump-then-run branches.
-The engine handles enemy turns, terrain, stomps and bounces; every encountered
-enemy participates. This backend uses privileged emulator state, including future
-spawns, rather than an observation-only physics model.
+Prediction never receives the environment, reads a save state, calls `env.step`, or
+tries alternate timelines. `Predictor.observe()` learns from actual consecutive
+observations only. Approximate acceleration, braking, friction, gravity, jump and
+water-stroke parameters start with conservative priors and adapt from real motion.
+Short past-position windows reduce integer-pixel quantization. Collisions, contact,
+coordinate discontinuities, mode changes and episode restarts do not become ordinary
+acceleration samples. Fast and slow takeoffs have separate jump-impulse and held-ascent
+gravity estimates. Air acceleration is fitted below the walking speed limit because
+pressing B during an existing flight does not establish a higher limit. Actor
+velocities come from contiguous visible history only.
+Nine uninterrupted, contact-free position observations can also estimate current
+horizontal speed, avoiding the lag of a past displacement average during acceleration
+or braking. Stationary recent windows and apparent NOOP reversals retain the fallback
+estimate rather than inventing motion after a stop.
+The takeoff speed class likewise uses a continuous grounded position window when
+available, and jump-impulse learning shares that class. A single rounded pixel delta
+must not turn a walking flight into a running flight.
 
-The model receives `prediction.committed_future` and `action_forecasts`: finite
-outcomes, damage risk, closest enemy approaches and progress. Encounter rows share
-object definitions to keep expanded recovery requests within the model context.
-Full landing clearances and phase events remain in `debug_state.prediction_details`;
-sampled per-frame paths are retained in `debug_state.prediction_traces`.
-`safe` means the specified finite button sequence survived without observed damage;
-it says nothing about other follow-up actions. TypeSafe proposes the action. If all
-of its forecast branches are explicitly unsafe and another allowed action has a
-complete safe continuation, a guard selects that alternative using the model's
-probabilities (forecast progress breaks ties). This applies before stall recovery;
-`selection.mode=forecast_safety` records the original and executed choices without
-changing the original probabilities. Unknown or missing forecasts alone do not
-trigger the guard, and without a safe alternative the proposal is retained.
-During a detected stall, the recovery selector can
-choose a forecast-safe alternative to an ineffective proposal, as described below.
+The predictor first estimates the result of the already committed buttons, then
+compares seven candidate inputs. Each candidate conditionally repeats at cycle
+boundaries over four cycles (at least 48 frames, capped at 96). Cycles or application
+delays above 96 frames return unavailable estimates; actual control timing is not
+shortened. Grounded jumps and water strokes use the same release/repress convention
+as execution. Visible blocks supply approximate wall, ceiling and landing contacts.
+Visible walking enemies use approximate gravity, support and wall response; other
+actors use observed motion with growing uncertainty. Enemy responses, stomps,
+springs, pipe transitions and unseen spawns remain uncertain. A lingering Goomba body
+is excluded only after an actual observed bounce, stationary body and visible score
+increase, with no overlapping alternative actor to explain the bounce. This evidence
+expires on disappearance, movement or observation gaps; Koopas remain hazards.
 
-Prediction restores emulator, parser, reward and wrapper state before gameplay
-continues. It adds wall-clock computation but no gameplay frames or API calls.
-If a backend lacks native snapshots, forecasts are explicitly unavailable and the
-policy uses its previous observation-based guidance. Logs identify the predictor
-backend/version and record its compute time. Unexpected prediction errors restore
-the scene and terminate with `prediction_error` rather than continuing silently.
+Descending contact near a brick underside retains horizontal momentum with an
+`uncertain_wall_contact` warning instead of relying on a full sprite-box collision
+to stop Mario. Vertically connected tile rows are treated as one face for this
+check. Full walls still block movement. Rising ceiling contact uses the head center
+instead of the wider body/foot span: grazing a brick edge must not invent a head
+strike and turn a continuing jump into a predicted fall. An existing head overlap
+is still resolved before horizontal motion can escape the tile.
+The already committed input also checks
+conditional enemy contacts: a possible Goomba bounce cannot be treated as a known
+grounded application state. `committed_interactions` remain hypothetical; a stopped
+projection marks `committed_future.valid_for_application=false` and all candidate
+paths retain the corresponding uncertainty.
 
-Candidate rollouts omit derived terrain grids and navigation hints that their
-summaries do not consume; native collisions, actor tracking, damage, landing and
-termination checks still run every frame. Committed frames retain full parsing
-for route selection. Identical fixed button sequences within a candidate share
-one simulation while preserving separate branch summaries and debug traces.
-The dashboard `Latency` and log `latency_ms` remain API-call duration only;
-local prediction time is recorded separately in `prediction.compute_ms`.
+Each candidate also has a `continuation`: a bounded search over subsequent input
+cycles in this same approximate model (at most six cycles, three retained branches
+per first action, plus waiting/braking refuges). A nearby high wall enables up to ten
+cycles and an 80-frame horizon with generic retreat/run/jump sequences, including
+tapered stair faces. It can compare walking then jumping
+with jumping immediately. Only the first selected input is executed; later inputs
+are suggestions that require fresh observations. Progress, visible landing support
+and close contacts contribute to the reported utility. Search is incomplete:
+`predicted_failure` means the retained estimates failed, not that every possible
+continuation must fail. A possible single-Goomba stomp can continue through a
+conditional bounce so later enemies and terrain are still checked. That branch
+alone temporarily removes the Goomba and retains `possible_stomp` and
+`uncertain_bounce` warnings; it cannot qualify as a warning-free refuge. Bounce
+impulse uses a bounded prior updated only after an actual scored Goomba stomp,
+and its approximate ascent uses falling gravity. This does not establish survival.
+An airborne endpoint now retains `unresolved_flight` even with ground below. A
+bounded NOOP tail can spend up to two more control cycles finishing the flight,
+within the 96-frame prediction limit; it cannot start another jump. `first_landing`
+and `continuation.landings` report enemy body gaps, approximate braking margins,
+jump clearance time and remaining frames before the next action can apply. A
+`landing_contact_window` warning prevents a tight landing from becoming a clear
+refuge simply because the plan suggests jumping again later.
+`committed_future.landing_timing` reports a heuristic timing margin when the
+scheduled input predicts a landing. If that margin overlaps action application,
+jump branches retain `uncertain_takeoff`: pressing A before actual touchdown and
+holding it through touchdown may never start a jump. Nominal grounded coordinates
+alone cannot certify that takeoff. Observed grounded states and sufficiently
+settled predicted landings do not receive this warning. Walking enemies that have
+visibly reversed use their latest nonzero direction and average absolute movement,
+so opposing steps no longer cancel their estimated speed toward zero.
 
-### Intermediate landings before tall obstacles
+Only an actually selected action can retain its proposed follow-up sequence.
+`plan_followup` rechecks that remainder against fresh terrain, actors and dynamics;
+discontinuous observations or differing actual inputs invalidate it. It is an
+advisory alternative in the bounded search, not an execution commitment or a
+learning sample. TypeSafe receives its current warnings and still chooses the
+executed action without replacement.
 
-`terrain.staging_route` identifies a tall obstacle with raised approach surfaces,
-even when there is no nearby gap. Geometry proposes useful footholds; native
-simulation determines whether a route actually clears the obstacle safely.
-Near these configurations the predictor additionally samples `staging_brake_N`:
-LEFT for 1–6 complete cycles followed by running jumps, plus immediate running
-jumps (`N=0`). These branches cover at least 128 frames and N+12 cycles, with the
-same bounded airborne extension. They include actual intermediate landings and
-obstacle clearance, not just the highest point of an attempted jump.
+Koopa stomps and spring contacts still stop the continuation estimate;
+simultaneous contacts cannot erase another hazard. An actual observed Koopa bounce
+followed by a stationary body can establish an inferred `stationary_shell`. Walking
+into that shell from supported ground is a possible kick, not a proven fatal contact
+or a safe route. Actual subsequent fast motion changes its role to `moving_shell`
+and uses the newly observed velocity; both roles retain the actor as a hazard.
+Slow movement, missing observations or ambiguous identity invalidate the kickable
+shell inference. Merely seeing a motionless Koopa does not establish a shell.
 
-A safe, complete route that crosses the obstacle takes priority over a locally
-safe loop. `selection.mode=staging_route` records the proposed action, selected
-action and route. The entire route is re-evaluated from the committed application
-state at every decision; successful multi-cycle braking is not interrupted merely
-for action diversity. If no verified clearing route exists, normal safety and
-recovery handling remains active. Swimming does not start this staging search.
-Recognized dry side exits instead use `entry_brake_N`: sustained LEFT followed by
-RIGHT without A, with actual engine pipe entry required for success. This lets
-Mario retreat off a pipe rim and descend without recovery inserting another jump.
-Successful entry plans are logged as `selection.mode=pipe_entry_route`.
-The search is bounded and does not claim to find every route.
+TypeSafe receives these inferred roles and conditional left/right `kick_forecasts`.
+The advisory paths use a stated speed prior, visible wall/pipe rebounds, and possible
+return times measured from a hypothetical kick. They do not establish when a kick
+will happen, whether it kills another enemy, or whether Mario survives. The policy
+checks return paths and jump headroom, then reobserves after contact. Continuations
+stop at a possible kick; its uncertainty remains in the executable-cycle risk filter
+even when later nominal routes look clear. No emulator trials or speculative
+updates to observed state are used.
 
-Recovery progress is measured beyond its historical horizontal anchor, and height
-credit comes from a supported endpoint. Retreating then returning to the same wall
-or reaching a transient jump peak does not by itself earn escape progress.
-Coordinate discontinuities greater than 32 pixels per elapsed frame rebase that
-anchor and its stall timer. This handles left-edge coordinate wrap and same-area
-warps without leaving recovery permanently active; gradual retreat still counts
-as lack of forward progress.
-`tests/test_staging_routes.py` covers both approaches from the 4-2 stall log,
-including forecast/execution agreement and repeated planning with queued inputs.
+When a visible wall connects a platform to an overhead ceiling, a clear visible
+drop and lower corridor can propose a local descent goal. Continuations then value
+reaching that lower floor, including temporarily moving left, instead of repeatedly
+trying to jump through the sealed wall. The goal is recomputed from current geometry;
+it does not establish safety or reachability. Enemy, fall and visibility checks still
+apply, and TypeSafe receives the goal alongside the candidate forecasts.
 
-### Underwater control
+Observed approaching walkers on continuous visible ground can also enable the
+80-frame run-up search when the approach and group have sufficient overhead room.
+`prediction.enemy_crossing` reports the group and available open-ground interval,
+including nearby low clearance behind Mario. TypeSafe is asked to prepare a
+directional crossing while that space remains, rather than repeatedly postponing
+the jump or retreating underneath bricks. The hint is advisory: every actor,
+ceiling contact and landing is still checked, and existing risk filters remain.
 
-The engine's `SwimmingFlag` selects swimming behavior, including in 2-2 and 7-2;
-the world/stage number is not used to guess the movement mode. This switches back
-to land controls when Mario leaves the water area. At each action boundary,
-consecutive A actions release A for one frame and press again for the remainder
-of the cycle, allowing repeated strokes without landing. Execution, committed
-prefix forecasts and candidate rollouts share the same button semantics.
+`prediction.committed_future` and `action_forecasts` contain nominal positions,
+heuristic position ranges, possible enemy contacts, unknowns and qualitative
+confidence. `no_contact_predicted` is not proof of safety; there are no native-verified
+routes, exact future death frames or guaranteed landings. Before the API request,
+an observation-based risk filter checks two control cycles after application and
+follows an already committed flight through its first estimated landing. When
+lower-risk alternatives exist, candidates with contact, unresolved fall, unreliable
+motion or unknown-terrain warnings are excluded. If all ranges suggest contact,
+nominal body collisions are distinguished from uncertainty-envelope overlap alone.
+Unknown terrain or a possible fall cannot qualify as a lower-risk refuge. If no
+lower-risk alternative can be identified, all allowed actions remain available.
+When every input predicts nominal enemy contact, the filter can compare contact
+duration, summed body-overlap area and final overlap within the first executable
+cycle. It excludes a dominated option only when another has no worse values in
+all three metrics and improves at least one. Fall, edge, visibility and reliability
+warnings in either risk window prevent an option from dominating others. This is
+an attempt to reduce exposure, not evidence that Mario survives a collision.
+Bounded continuations can identify an alternative when repeated-input forecasts
+cannot. A complete warning-free continuation can discharge a later repeated-input
+fall, marginal-landing or landing-reaction-margin warning only when the first
+executed cycle has no risk flags. It cannot discharge an enemy body-contact
+warning or uncertain takeoff. Complete warning-free
+continuations take priority over higher-progress plans with remaining warnings.
+The continuation fallback also retains executable-cycle fall, unseen-terrain and
+unreliable-motion warnings; a later nominal landing cannot erase those warnings.
+For a flight already in progress at action application, its first continuation
+landing must also retain support across the forecast's horizontal position range.
+A narrow nominal landing beside a pit keeps `uncertain_landing`; later movement
+on nominal ground cannot erase that first-landing risk. Visible lower support can
+catch a platform-edge miss. Later optional jumps still require fresh observations
+instead of inheriting an ever-growing position range through the entire search.
+The controller uses Jev's selected action unchanged; there is no post-response
+action replacement. Pipe geometry remains advisory. Observed stationary wall
+pushes can exclude inputs that predict continued immobility when a complete clear
+moving alternative exists. This requires grounded actual and queued states,
+repeated ineffective rightward input, and a moving alternative with no first-cycle
+risk flags; intentional waiting alone does not trigger it. Distant visible actors
+do not disable recovery when the alternative's forecast remains clear.
+Prolonged stationary NOOP input has a separate recovery check: after at least48
+stationary frames including40 NOOP frames, it can exclude another NOOP when an
+already eligible moving input has a clear first cycle and complete warning-free
+continuation. This prevents continually postponing the movement that makes a waiting
+plan look attractive. Brief waits and waits without such an alternative remain valid.
+Recovery also measures a contiguous local motion envelope. After at least 64 frames
+within eight horizontal and four vertical pixels near a wall, repeated forward
+input can establish a local loop even when left/right shuffling resets stillness.
+If an eligible action moves forward or up immediately and has a complete warning-free
+continuation ending on support beyond the stalled position, choices that keep
+postponing that escape are excluded. A real run-up, jump, observation gap or warp
+breaks the local evidence; uncertain jumps do not qualify as escapes.
 
-Swimming state omits ballistic landing targets and gap takeoff instructions.
-The policy uses strokes to rise and releases A to descend below obstacles or
-align with an exit pipe; NOOP and LEFT do not maintain depth. Native forecasts
-can resolve a swimming path without landing when its endpoint is no longer
-sinking and is above the bottom danger zone. Descents still get the bounded
-48-frame extension and remain unknown if unresolved, so sinking into a seabed
-opening is not automatically considered safe. Land flight checks are unchanged.
-Sideways exit detection recognizes both the land and underwater pipe metatiles,
-so the policy can descend to the water exit instead of repeatedly swimming into
-the wall above it.
+`prediction.risk_control` and log `selection` expose candidate eligibility and
+exclusion reasons. Remaining candidates are not certified safe. Partial body overlap
+with a visible ceiling or wall is resolved conservatively instead of predicting
+motion through the solid tile. Unsupported descent warns before falling below the
+screen, but a later predicted landing on visible support can clear that warning;
+ordinary short gaps must not make every forward action ineligible. Marginal edge
+landings remain uncertain even if they occur after the ordinary control window.
+Grounded estimates also check whether the horizontal position range retains visible
+support. A nominal position just before a gap is insufficient when that range crosses
+the edge. Short drops can remain eligible when both range endpoints are estimated
+to reach the same visible lower floor with a margin.
+After landing, later optional departures are replannable. Airborne reverse input
+uses air acceleration rather than ground braking, and reliable past pixel motion
+is averaged to reduce integer-velocity bias.
+Gravity fitting retains both signs of one-pixel velocity fluctuation; discarding
+only upward fluctuations would systematically underestimate jump height. Parameters
+are fitted once per forecast and reused across hypothetical steps.
+Air acceleration uses a quadratic fit to nine consecutive observed positions,
+excluding input changes, contacts and motion near the speed cap. This avoids
+mixing raw and smoothed velocity differences or selecting only quantized low-speed
+samples. At a held-jump apex, a zero pixel height change can still be ascent:
+continuous rising-height evidence can retain a fitted subpixel upward velocity
+instead of prematurely applying falling gravity.
+Held-ascent gravity also uses nine-position fits, restricted to a known flight
+class and velocities above the apex quantization band. If contacts or short input
+segments leave no suitable window, the original bounded prior remains in use.
+During continuous held ascent, five observed positions estimate the latest velocity
+using the fitted deceleration, avoiding a whole-pixel speed error that can falsely
+reject a gap jump. Ground friction uses nine observed positions during uninterrupted
+NOOP motion; it excludes stopped intervals instead of selecting nonzero pixel speeds.
+Observed downward velocity changes of two pixels are also retained as quantized
+measurements; discarding them biases release gravity downward and predicts landing
+too late. Fitted parameters still obey their physical bounds, and observations near
+contacts or discontinuities remain excluded from learning.
 
-`tests/test_swimming.py` replays the 2-2 stall from
-`run-20261002T023404.251790Z.jsonl`: at x=1060, continuously held A sinks and dies,
-while repeated strokes escape the opening. It also checks forecast/execution
-agreement, committed input timing, and restoration of land semantics.
+Repeated actual LEFT input without horizontal movement at the visible left edge
+can establish a local movement limit. Forecasts then check approaching enemies
+without inventing additional retreat beyond that limit. View changes, observation
+gaps, unreliable data and contradictory movement invalidate the inference; it supplies
+no offscreen terrain. A fresh grounded jump press has a one-step initiation delay,
+based on observed input/height timing; stepping off an edge during that step cannot
+invent a takeoff. A fresh press on a landing frame is likewise retained for the next
+step. Cancellation on immediate release remains a model assumption.
 
-### Timed interactions and recovery
+Only selected, actually executed first cycles are compared with their saved forecasts.
+`prediction.validation` reports rolling x/y absolute errors and observed range coverage;
+changed inputs and discontinuities invalidate comparisons. Alternative actions are not
+executed or used as training labels. Predictor history starts fresh on restart/resume.
 
-Plant tracks include the engine phase, remaining wait estimates and proximity
-conditions. A zero velocity can mean either an exposed pause or a hidden pause.
-For nearby exposed plants, `wait_for_clearance` forecasts releasing controls after
-the first candidate cycle, waiting until the plants are observed fully hidden and
-Mario is grounded, then run-jumping at a normal boundary. Its horizon adapts to the
-phase estimate, with a 192-frame cap. An incomplete wait is `unknown`, not `safe`.
-All other enemies remain simulated during the wait. Phase transitions and the
-wait-completion event are recorded in detailed forecasts; compact model summaries
-retain the wait-completion event and current tracks retain phase/timer information.
+The dashboard `Latency` and log `latency_ms` measure API-call duration only.
+`prediction.compute_ms` separately measures local forecast computation. Model-facing
+state is `observation.model_state`; fuller parser/RAM-derived diagnostics remain in
+local debug logs and are not sent to the provider. There is no native predictor fallback.
+Provider requests include compact first-cycle estimates, risk warnings and
+continuations, plus recent actual motion segments, per-actor velocity/trajectory
+estimates, earliest contact offsets and observed prediction errors. Full
+repeated-input trajectories remain in the local run log.
+Manual user-requested checkpoint resume is a separate feature, described below.
 
-`interactables` distinguishes springboards and side-entry pipes from hostile
-enemies. A spring is a place to land and launch from; a side-entry pipe requires
-alignment with the mouth and walking inside. Recovery is not tied to a level or
-fixed x coordinate. Its native forecasts compare temporary retreats, button
-releases, walking and jumping, including their later progress and maximum height.
-
-`recovery` records frames since the last meaningful four-pixel forward gain and
-recent per-action frame counts. After 48 frames without progress it activates,
-including repeated vertical jumps and small horizontal loops. A supported,
-deliberate wait beside an exposed plant is exempt for at most 192 frames. Progress
-and area changes reset the history, which is also preserved by checkpoints.
-
-When recovery is active, the selector first favors a forecast-safe alternative
-with substantially better progress. If the model repeats an over-tried action
-whose first cycle produces no new horizontal or vertical progress, it samples a
-different safe alternative,
-weighting the model probabilities and discounting recent attempts. Sampling uses
-repeatable state/frame seeds; it does not randomly choose known unsafe or unknown
-paths. With no forecast-safe alternative it retains the model proposal.
-Hypothetical height gained by a later jump cannot indefinitely justify idling now;
-an actual new height gain in the next cycle can preserve an ongoing spring launch.
-`selection` in decision logs records the original proposal, its confidence, the
-executed action and reason; `probabilities` remains the original model distribution.
-Each actual action still lasts one normal cycle, and recovery is re-evaluated at
-every decision rather than committing an uninterruptible long macro.
-
-The initial action set is intentionally small:
-
-- `noop`
-- `right`
-- `right_jump`
-- `right_run`
-- `right_run_jump`
-- `jump`
-- `left`
+The action set is `noop`, `right`, `right_jump`, `right_run`, `right_run_jump`,
+`jump` and `left`. Water uses repeated A strokes for lift and release for descent;
+movement modes are calibrated separately. A visible pipe mouth is a navigation hint,
+not proof of successful entry. Stall recovery resets its progress anchor after
+coordinate wraps/warps, while gradual retreat still counts as lack of forward progress.
 
 ## Requirements
 
@@ -285,202 +365,28 @@ even when no further response arrives. `run_config` records environment, seed, d
 action cadence, control mode, policy type, and prompt/state versions. Readers of the old
 format should filter decision records before reading action probabilities.
 
-## What the parser produces
+## Model input and judgments
 
-TypeSafe accepts JSON directly, so there is no need to flatten telemetry into prose.
-The model-facing object groups observations by meaning:
+`observation.model_state(snapshot)` is the canonical provider input:
 
-- `player`: position, center x, per-frame velocity, RAM-confirmed grounded state, jump phase,
-  power-up, held jump button, and release/repress requirement
-- `trajectory`: airtime, distance since takeoff, committed gap crossing, and an approximate
-  descending landing projection
-- `hazard`: up to three enemies, projected positions, contact timing, and takeoff deadline
-- `terrain`: contiguous gaps, visible far edges, static landing surfaces and safe center
-  intervals, observation reliability, and a grounded preview rebased to current position
-  with its observation age
-- `reaction_timing`: action duration and measured observation-to-action delay
-- `recent_control`: chosen action, duration, progress gained, and observed outcome
-- `episode`: lives, clock, progress, stalls, death, and level completion
+- `player`: observed coordinates, pixel-difference velocity, current grounded/water
+  state and motion reliability. World x increases rightward; y increases upward.
+- `visible_actors`: visible identities, kinds and positions, without engine timers.
+- `terrain`: visible block rectangles, known horizontal extent and visible pipe mouth.
+- `reaction_timing`: committed input, delay and next action duration.
+- `recovery`: observed stall duration and recent actual input counts.
+- `prediction`: approximate candidate motion, uncertainty, calibration and causal errors.
 
-For humans, the fuller debug snapshot can still be rendered as compact text:
+The provider returns three judgments: `next_action` chooses the actual controller
+macro; `jump_intent` and `danger` are diagnostics and never override the buttons.
+All supplied legal actions remain available, including jumps that may become possible
+after a predicted landing. Unknown geometry does not imply an empty or safe path.
 
-```text
-Goal: Complete the current stage without dying.
-Mario: x=172 y=79, moving right, airborne=False, status=small
-Progress: 172 (best 172), time=387, lives=2
-Nearby enemies: goomba 42px ahead
-Local grid (# solid, . empty, E enemy, M Mario):
-...........
-...........
-...........
-..M..E.....
-###########
-```
-
-The structured object is canonical; the text view is only for debugging and UI.
-
-## TypeSafe judgments
-
-The native-forecast path uses the interaction/recovery behavior described above.
-The detailed observation heuristics below remain as fallback guidance when native
-forecasts are unavailable; their model-only action selection also applies whenever
-the recovery selector has no forecast-safe alternative.
-
-Each request evaluates three independent judgments over the same state:
-
-- `next_action` (`Choice`) selects a controller macro, prioritizing survival and a supported
-  landing before forward progress. During ascent it explicitly maintains the forward jump;
-  clear supported ground favors running. These rules apply to the predicted state at action
-  application time. Future requests keep all supplied actions available because Mario may
-  land or take off during the scheduled action. Only immediate falling-state requests filter
-  redundant jump buttons when non-jump choices are available.
-- `jump_intent` (`Choice`) distinguishes `start`, `hold`, `release`, and `none`. It is diagnostic
-  and does not override the selected controller action. The dashboard's start/hold percentage
-  is the sum of those two probabilities, also retained as `jump_needed_probability` in logs.
-- `danger` (`Score`) assesses the risk if the scheduled action continues over the reaction
-  horizon: 0 = supported travel, 1 = plausible threat, 2 = imminent damage or death. The UI
-  normalizes this score to a bar; it is not a calibrated death probability.
-
-Questions distinguish observation time, action application at D, and cycle completion at
-D+H. Jump continuity applies when Mario is predicted to still be rising at application.
-Landing safety takes priority over repeating the previous jump or continuing to run.
-
-When a future landing leaves inadequate space before an enemy ahead, the questions add
-an approximate `landing_reference`: signed enemy distances at
-touchdown and at D+H, vertical separation at the landing surface, and space for about eight
-frames of takeoff clearance. The early-airborne-braking rule applies only when the
-estimated touchdown falls inside the requested cycle, after the committed action; a
-touchdown or stomp before application can already have changed the trajectory. Ordinary
-states retain the established questions. Safe touchdown alone does not imply safe travel
-for the rest of the cycle. These estimates assume unchanged relative velocity and enemy height; they
-neither simulate candidate controls nor override Jev's selected action. Enemies behind
-Mario at touchdown must not trigger braking back toward them.
-
-For falling enemies (including ones just behind Mario), `hazard.overhead_threats`
-reports measured vertical motion and possible platform-edge drops into the requested
-action cycle. Screen-coordinate vertical speed is positive downward; relative vertical
-speed also includes Mario's movement. The first observation, slot reuse, and screen
-wraps leave motion unknown. Goombas and green koopas near a visible platform edge can
-warn before a fall starts; ordinary red koopas turn at edges instead. Horizontal
-extrapolation checks the interval D through D+H. A falling enemy projected to be below
-Mario before application does not trigger this escape rule. Both estimates remain approximate.
-
-Only while this warning is present, the questions suspend normal jump continuity:
-prefer releasing A and moving underneath on supported ground, rather than rising into
-the enemy or retreating toward one behind. Required pit-crossing height still takes
-precedence. The provider retains all applicable action choices; there is no hardcoded
-enemy-avoidance action override.
-
-`terrain.gap_takeoff_window` supplies a deadline when grounded forward travel would
-pass a visible floor's safe takeoff edge by D+H. It projects Mario's center at D and
-D+H using the observed speed, rather than waiting for the current `gap_ahead` tile
-threshold. If the window is still open at D, the questions prioritize a forward jump
-for a reachable crossing (or braking if the route is blocked). A scheduled jump,
-airborne state, unknown support, or a floor that does not extend to the gap cannot
-trigger this cue. A missed window is reported separately and does not promise that
-an airborne jump is possible. These constant-speed estimates are conservative and
-do not simulate acceleration, collisions, or jump reachability.
-
-Piranha plants use SMB enemy ID `0x0d` (`0x12` is Spiny). Their RAM movement flag,
-direction, endpoint positions and pause timer distinguish `rising`, `extended`,
-`retracting`, and `hidden`; a zero per-frame velocity alone cannot identify the phase.
-An emergence that has started is already `rising`, even before its first movement frame.
-`hazard.pipe_plants` includes nearby plants, pipe height and approximate phase timing.
-At an occupied pipe within 48 pixels, the questions switch to waiting guidance:
-release A, land/wait on supported ground beside the pipe, then jump once the plant is
-fully hidden. This replaces the ordinary repeat-jump and blocked-progress guidance
-for that state. A plant still retracting is not yet hidden. A hidden, idle plant does
-not start emerging while Mario remains within 33 horizontal pixels; moving away can
-remove that protection. Timing does not guarantee a safe landing, and an airborne
-Mario already safely above the plant should continue toward support. As with other
-questions, the provider chooses the action; there is no automatic button override.
-
-`terrain.side_exit_pipe` preserves the horizontal mouth metatiles (`0x1c`/`0x1f`)
-that the binary collision grid otherwise treats as an ordinary wall. Near that mouth,
-questions replace repeated-jump guidance with entry alignment: release A, land at the
-entry floor height and walk RIGHT into the pipe. If Mario is already on top of the lip,
-retreat LEFT onto the supported approach, descend, then turn RIGHT to enter. The cue
-includes the mouth position, floor height, retreat target and nearby support; positions
-come from observed tiles rather than hardcoded World 1-2 coordinates. Engine state 2
-reports automatic side-pipe entry. A pipe transition is not completion: resume ordinary
-navigation after emergence and continue to the flag. The model still chooses buttons.
-
-`terrain.stair_approach` prevents a premature slow jump before distant ascending
-stairs. It requires predicted ground support at action application, walking speed,
-at least three contiguous 16-pixel rises, and a supported approach cycle. While the
-first step is still more than 48 pixels away, the questions prefer walking closer
-instead of immediately bouncing after landing. Once closer, ordinary jump guidance
-resumes. Immediate enemies can require a running takeoff; adding B only after launch
-is not assumed to repair the trajectory. The cue is approximate and does not promise
-enemy clearance. In particular, stomping the first enemy in a group does not guarantee
-clearance over the next, higher enemy.
-
-When taking off from a raised step with lower ground available before a visible gap,
-`terrain.jump_reach_reference` compares
-the predicted takeoff position, current horizontal speed and landing height with an
-approximate fully held jump arc. Horizontal speed comes from the fractional RAM value
-when available, avoiding one-frame integer rounding (for example, 1.75 versus 2 px/frame).
-The cue applies only when Mario is on support at application, including a predicted
-landing during the committed cycle; it does not ask for another takeoff in midair.
-If the jump appears too short and the next cycle has a continuous same/lower walkway
-before the safe gap edge, the questions prefer moving right without A before jumping.
-If the far bank is not yet visible, its distance and height remain unknown; a supported
-approach can reveal it before committing to a jump. When there are multiple landing
-heights at the far edge, an overhead block does not conceal a usable lower floor.
-Descending approaches also check that Mario can land and reach the next action boundary
-within the lower floor's safe interval.
-Flat-ground approaches continue to use the existing gap takeoff deadline.
-This estimate ignores acceleration, ceilings, walls and enemies and is not proof of
-reachability. A lower step may require landing again before the next jump; running
-forward blindly can exhaust that takeoff window.
-
-Before a visible gap within 128 pixels, `precision_landing_target` selects the highest
-forward platform up to 64 pixels above Mario and keeps its world coordinates throughout
-the jump. At four pixels above that platform, `precision_target_cleared` signals enough
-height to release A and land before attempting the gap. The signal stops once Mario passes
-the platform's safe center interval, with `precision_target_missed` reporting that case.
-The target is re-evaluated on ground. These are approximate planning cues; normal
-enemy-clearing jumps still hold A through ascent.
-
-Both headless and dashboard modes parse every executed emulator frame and use the same
-jump release/repress logic. Even one pixel of upward motion is classified as rising so
-slow ascent does not imply that A should be released. A grounded jump macro releases a previously held A for one
-frame before pressing it again. With a one-frame macro, the following decision must choose
-a jump again to press A. `reaction_timing.frames_until_action`, `scheduled_action` and
-`scheduled_first_frame_action` describe the committed movement before the requested
-action applies. Player and terrain fields remain observations of the current frame,
-not invented future telemetry. The model must predict the future state from this context.
-The reaction horizon uses the planned delay plus the next action cycle; historical
-`last_inference_delay_frames` is retained only as telemetry. Logs retain both request
-state and actual application state, so the prediction horizon can be checked directly.
-
-Geometry uses the full vertical collision buffer separately from the actor overlay, so
-jumping does not hide the floor. Coins, invisible blocks and climbable tiles are excluded
-from landing support using the original game's [collision rules](https://gist.github.com/1wErt3r/4048722).
-Separate holes are not combined, and a lower platform is distinguished from a pit.
-Unknown support never means a clear path. Surface coordinates describe static terrain;
-`safe_center_min_x`/`safe_center_max_x` should be compared to `player.center_x`.
-
-Landing estimates are explicitly approximate and descending-only: constant horizontal
-velocity, 0.5 px/frame² downward acceleration, and a 5 px/frame fall-speed cap. They do not
-simulate the candidate action, ceilings, walls or moving platforms. A separate approximate
-landing-threat feature projects nearby enemies to the landing time, including enemies that
-are not vertically overlapping yet. If that predicts contact with an enemy ahead and visible ground supports
-braking, the prompt asks for a brief airborne brake rather than waiting until landing.
-A threat already behind Mario instead calls for forward movement, avoiding braking back
-into that enemy. An unknown
-projection is not evidence of safety. Enemy timing uses a conservative 16-pixel horizontal
-margin, current vertical overlap, and an approximate eight-frame clearance budget; these
-are urgency estimates rather than guarantees. Jev retains control of the selected action.
-
-For comparisons, use identical environments, seeds, control versions and frame cycles.
-Compare complete `episode_end` records, report stage-clear rate, death positions, stalls
-and decisions per completed stage, and keep quit/restart/policy-error runs separate.
-Old synchronous and millisecond-budget runs have different control semantics. Fixed-frame
-logs identify `control_mode=fixed_frame_lookahead`; complete actions should have exactly
-`frames_per_decision` execution frames, with that same application delay after bootstrap.
-Unit tests and scripted emulator replays validate the harness; they do not establish an
-improved Jev stage-clear rate.
+The original detailed parser remains useful for the local dashboard and diagnostics.
+Its internal terrain heuristics and RAM-derived fields are not the model input.
+Native exact-outcome tests have been replaced with tests for observation isolation,
+causal learning, approximate motion, uncertainty and unmodified provider selection.
+Native execution fixtures still validate real button timing and manual checkpoint replay.
 
 ## Development
 

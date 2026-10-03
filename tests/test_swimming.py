@@ -5,9 +5,9 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from prediction_helpers import predicted
 
 from typesafe_mario.actions import ACTION_TO_INDEX, Action
-from typesafe_mario.prediction import forecast_actions
 from typesafe_mario.runner import _first_frame_action, create_mario_env
 from typesafe_mario.state import MarioStateParser
 
@@ -33,35 +33,6 @@ def underwater(request):
         yield env, parser, s
     finally:
         env.close()
-
-
-def test_swim_macro_escapes_logged_pit_and_matches_forecast(underwater):
-    env, parser, s = underwater
-    predicted = forecast_actions(env, parser, s, (Action.RIGHT_JUMP,))
-    branch = predicted.prediction["action_forecasts"][0]["continuations"]["repeat"]
-    assert branch["risk"] == "safe"
-    assert not branch["end_player"]["grounded"]
-    assert branch["swimming_resolved"]
-    end = branch["evaluated_through_frame"]
-    for frame in range(96):
-        action = _first_frame_action(s, Action.RIGHT_JUMP) if frame % 8 == 0 else Action.RIGHT_JUMP
-        _, reward, terminated, truncated, info = env.step(ACTION_TO_INDEX[action])
-        s = parser.parse(
-            info, env.unwrapped.ram, previous_action=action.value, previous_reward=reward
-        )
-        assert not (terminated or truncated or s.dead)
-        if frame + 1 == end:
-            assert (s.x, s.y) == (branch["end_player"]["x"], branch["end_player"]["height_y"])
-    assert s.x >= 1200
-    assert s.y >= 200
-
-
-def test_sinking_without_strokes_is_still_unsafe(underwater):
-    env, parser, s = underwater
-    predicted = forecast_actions(env, parser, s, (Action.LEFT,))
-    branch = predicted.prediction["action_forecasts"][0]["continuations"]["repeat"]
-    assert branch["risk"] == "unsafe"
-    assert branch["outcome"] == "death"
 
 
 @pytest.mark.parametrize("underwater", ["world2-2-exit.json"], indirect=True)
@@ -100,21 +71,6 @@ def test_water_state_uses_engine_flag_and_clears_on_land():
     assert not parser.parse({"world": 2, "stage": 2}).swimming
 
 
-def test_swimming_committed_prefix_rearms_like_execution(underwater):
-    env, parser, s = underwater
-    s = replace(s, frames_until_action=8, scheduled_action="right_jump")
-    predicted = forecast_actions(env, parser, s, (Action.RIGHT_JUMP,))
-    for frame in range(8):
-        action = _first_frame_action(s, Action.RIGHT_JUMP) if frame == 0 else Action.RIGHT_JUMP
-        _, reward, _, _, info = env.step(ACTION_TO_INDEX[action])
-        s = parser.parse(
-            info, env.unwrapped.ram, previous_action=action.value, previous_reward=reward
-        )
-    committed = predicted.prediction["committed_future"]["player"]
-    assert (s.x, s.y) == (committed["x"], committed["height_y"])
-    assert s.y > 167
-
-
 def test_falling_swimmer_keeps_stroke_actions_without_prediction():
     from test_policy import Provider, policy
 
@@ -126,3 +82,20 @@ def test_falling_swimmer_keeps_stroke_actions_without_prediction():
     decision = policy(provider).choose(s, tuple(Action))
     assert decision.action == Action.RIGHT_JUMP
     assert set(provider.request["questions"]["next_action"].criteria) == {a.value for a in Action}
+
+
+def test_observed_water_forecasts_compare_strokes_without_guaranteeing_survival(underwater):
+    _, _, s = underwater
+    result = predicted(s, (Action.RIGHT_JUMP, Action.RIGHT))
+    stroke, release = result.prediction["action_forecasts"]
+    assert stroke["first_cycle"]["y"] > release["first_cycle"]["y"]
+    assert all("swimming_dynamics" in f["unknowns"] for f in (stroke, release))
+    assert all(f["risk"] not in ("safe", "unsafe") for f in (stroke, release))
+
+
+def test_water_committed_prefix_is_an_estimate_with_uncertainty(underwater):
+    _, _, s = underwater
+    result = predicted(replace(s, frames_until_action=8, scheduled_action="right_jump"))
+    future = result.prediction["committed_future"]
+    assert future["frame"] == 8
+    assert future["y_range"][0] < future["y"] < future["y_range"][1]

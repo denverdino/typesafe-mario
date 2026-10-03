@@ -26,80 +26,6 @@ ENEMY_NAMES: dict[int, str] = {
 }
 
 
-def _model_prediction(prediction: dict[str, Any]) -> dict[str, Any]:
-    """Keep every candidate/outcome and encounter, with shared object definitions.
-
-    Full landing offsets, phase transitions and player details remain in debug logs.
-    In particular, adding recovery branches must not multiply these verbose records
-    until the provider's context limit is exceeded.
-    """
-    if prediction.get("backend") != "native_checkpoint":
-        return prediction
-    objects: list[dict[str, Any]] = []
-    indices: dict[str, int] = {}
-    forecasts = []
-    for forecast in prediction.get("action_forecasts", []):
-        branches = {}
-        first_cycle = {}
-        for name, branch in forecast["continuations"].items():
-            first_cycle = branch.get("first_cycle", {})
-            compact = {
-                k: branch[k]
-                for k in (
-                    "outcome",
-                    "risk",
-                    "evaluated_through_frame",
-                    "terminal_frame",
-                    "max_forward_progress_pixels",
-                    "max_height_y",
-                    "continuation_complete",
-                    "landing_resolved",
-                    "route",
-                )
-                if k in branch and branch[k] is not None
-            }
-            compact["end_player"] = {
-                k: branch["end_player"][k] for k in ("x", "height_y", "grounded")
-            }
-            # Water-only markers stay sparse; recovery already has many branches.
-            if branch.get("swimming_resolved"):
-                compact["swimming_resolved"] = True
-            if branch["end_player"].get("swimming"):
-                compact["end_player"]["swimming"] = True
-            encounters = []
-            for encounter in branch["enemy_encounters"]:
-                identity = encounter["id"]
-                if identity not in indices:
-                    indices[identity] = len(objects)
-                    objects.append({k: encounter[k] for k in ("id", "kind", "role")})
-                encounters.append(
-                    [
-                        indices[identity],
-                        encounter["closest_frame"],
-                        encounter["dx"],
-                        encounter["dy"],
-                    ]
-                )
-            compact["enemy_encounters"] = encounters
-            # Repeated bounce/plant animation events are diagnostic detail. Preserve
-            # all damage, area changes and completed-wait events for decisions.
-            compact["events"] = [
-                e for e in branch["events"] if e["type"] not in {"plant_phase", "upward_bounce"}
-            ]
-            branches[name] = compact
-        forecasts.append(
-            {"action": forecast["action"], "first_cycle": first_cycle, "continuations": branches}
-        )
-    return {
-        **prediction,
-        "action_forecasts": forecasts,
-        "encounter_objects": objects,
-        "encounter_columns": ["object_index", "closest_frame", "dx", "dy"],
-        "detail_note": "All encounters retained as rows indexing encounter_objects. Full "
-        "landings, phase/bounce events and player states are in debug prediction_details.",
-    }
-
-
 @dataclass(frozen=True)
 class EnemyObservation:
     slot: int
@@ -153,6 +79,7 @@ class MarioSnapshot:
     enemies: tuple[EnemyObservation, ...] = field(default_factory=tuple)
     local_grid: tuple[str, ...] = field(default_factory=tuple)
     collision_grid: tuple[str, ...] = field(default_factory=tuple)
+    viewport_grid: tuple[str, ...] = field(default_factory=tuple)
     screen_y: int = 0
     frame_index: int = 0
     preview_frame: int | None = None
@@ -188,6 +115,7 @@ class MarioSnapshot:
     prediction: dict[str, Any] | None = None
     prediction_traces: tuple[dict[str, Any], ...] = field(default_factory=tuple)
     recovery: dict[str, Any] = field(default_factory=dict)
+    camera_left_x: int | None = None
 
     def recovery_features(self) -> dict[str, Any]:
         waiting = bool(
@@ -735,11 +663,7 @@ class MarioSnapshot:
             "enemy_coordinates": "world x rightward; screen y downward; pixels/frame",
             "interactables": self.interactable_features(),
             "recovery": self.recovery_features(),
-            **(
-                {"prediction": _model_prediction(self.prediction)}
-                if self.prediction is not None
-                else {}
-            ),
+            **({"prediction": self.prediction} if self.prediction is not None else {}),
             "terrain": terrain,
             "reaction_timing": {
                 "action_horizon_frames": self.decision_horizon_frames,
@@ -811,8 +735,10 @@ class MarioSnapshot:
         return "no_progress_yet"
 
     def to_debug_state(self) -> dict[str, Any]:
+        from .observation import model_state
+
         return {
-            "model_state": self.to_state(),
+            "model_state": model_state(self),
             "raw": {
                 "player_state": self.player_state,
                 "coins": self.coins,
@@ -1075,9 +1001,25 @@ class MarioStateParser:
             recovery=self._progress_memory.update(self._frame_index, level, x, y, previous_action),
             local_grid=tuple(grid),
             collision_grid=tuple(self._extract_collision_grid(ram, x)) if include_geometry else (),
+            viewport_grid=(
+                tuple(
+                    self._extract_tile_columns(
+                        ram,
+                        (x - self._integer(info, "left_x_pos")) // 16,
+                        (x - self._integer(info, "left_x_pos") + 255) // 16 + 1,
+                    )
+                )
+                if include_geometry and info.get("left_x_pos") is not None
+                else ()
+            ),
             side_exit_pipe=self._extract_side_exit_pipe(ram, x) if include_geometry else None,
             screen_y=screen_y,
             frame_index=self._frame_index,
+            camera_left_x=(
+                x - self._integer(info, "left_x_pos")
+                if info.get("left_x_pos") is not None
+                else None
+            ),
             preview_frame=self._preview_frame,
             preview_gap_start_x=self._preview_gap_start_x,
             preview_obstacle_start_x=self._preview_obstacle_start_x,
@@ -1289,12 +1231,15 @@ class MarioStateParser:
         return None
 
     def _extract_collision_grid(self, ram: Sequence[int] | None, mario_x: int) -> list[str]:
+        return self._extract_tile_columns(ram, mario_x // 16 - 2, mario_x // 16 + 9)
+
+    def _extract_tile_columns(self, ram: Sequence[int] | None, start: int, end: int) -> list[str]:
         if ram is None:
             return []
         rows = []
         for row in range(13):
             cells = []
-            for tile_x in range(mario_x // 16 - 2, mario_x // 16 + 9):
+            for tile_x in range(start, end):
                 address = 0x500 + ((tile_x // 16) % 2) * 208 + row * 16 + tile_x % 16
                 cells.append(
                     "#" if tile_x >= 0 and is_support_tile(self._ram_byte(ram, address)) else "."
