@@ -1,7 +1,6 @@
 from types import SimpleNamespace
 
 import pytest
-from typesafe_sdk import Choice, Score
 
 from typesafe_mario.actions import Action
 from typesafe_mario.policy import TypeSafePolicy
@@ -32,12 +31,13 @@ class Provider:
 
 def policy(provider):
     p = TypeSafePolicy.__new__(TypeSafePolicy)
-    p._Choice, p._Score, p._client = Choice, Score, provider
+    p._client = provider
     return p
 
 
 def test_latency_only_measures_api_excluding_observation_preparation(monkeypatch):
-    from typesafe_mario import policy as module
+    from typesafe_mario import policy as policy_module
+    from typesafe_mario import tactical as module
 
     clock = [0.0]
     original = module.model_state
@@ -52,7 +52,7 @@ def test_latency_only_measures_api_excluding_observation_preparation(monkeypatch
             return super().system_one(**request)
 
     monkeypatch.setattr(module, "model_state", slow_state)
-    monkeypatch.setattr(module.time, "perf_counter", lambda: clock[0])
+    monkeypatch.setattr(policy_module.time, "perf_counter", lambda: clock[0])
     assert (
         policy(TimedProvider()).choose(MarioStateParser().parse({}), tuple(Action)).latency_ms
         == 250
@@ -62,10 +62,12 @@ def test_latency_only_measures_api_excluding_observation_preparation(monkeypatch
 def test_diagnostic_jump_answer_does_not_override_controller_choice():
     provider = Provider()
     s = MarioStateParser(decision_horizon_frames=3).parse({"x_pos": 100})
-    d = policy(provider).choose(s, tuple(Action))
+    p = policy(provider)
+    p.diagnostic_questions = True
+    d = p.choose(s, tuple(Action))
     assert d.action == Action.RIGHT and d.jump_intent == "release"
     assert d.jump_needed_probability == pytest.approx(0.3)
-    assert provider.request["state"]["reaction_timing"]["action_horizon_frames"] == 3
+    assert provider.request["state"]["reaction_timing"]["action_cycle_frames"] == 3
 
 
 def test_provider_cannot_select_disallowed_action():
@@ -91,7 +93,11 @@ def test_forecasts_and_recovery_do_not_replace_provider_selection(risk):
     provider = Provider("right")
     d = policy(provider).choose(s, tuple(Action))
     assert d.action == Action.RIGHT and d.selection is None
-    assert provider.request["state"]["prediction"] == s.prediction
+    assert all(
+        a["execution"]["risk"] == "unavailable"
+        for a in provider.request["state"]["action_assessments"]
+    )
+    assert s.prediction["action_forecasts"][0]["risk"] == risk
 
 
 def test_no_prediction_still_uses_visible_observations_and_keeps_future_jump_choices():
@@ -106,7 +112,9 @@ def test_no_prediction_still_uses_visible_observations_and_keeps_future_jump_cho
     )
     provider = Provider("right_jump")
     assert policy(provider).choose(s, tuple(Action)).action == Action.RIGHT_JUMP
-    assert set(provider.request["questions"]["next_action"].criteria) == {a.value for a in Action}
+    assert set(provider.request["questions"]["next_action"]["criteria"]) == {
+        a.value for a in Action
+    }
     assert "enemy_tracks" not in provider.request["state"]
 
 
@@ -135,16 +143,22 @@ def test_provider_gets_compact_plans_without_mutating_diagnostic_forecasts():
     provider = Provider("right")
     policy(provider).choose(s, tuple(Action))
     sent = provider.request["state"]["prediction"]
-    assert "trajectory" not in sent["action_forecasts"][0]
-    assert "continuation" in sent["action_forecasts"][0]
+    assessments = provider.request["state"]["action_assessments"]
+    assert "action_forecasts" not in sent
+    assert "trajectory" not in assessments[0]
+    assert "continuation" in assessments[0]
     assert sent["recent_motion"] == prediction["recent_motion"]
     assert sent["actor_forecasts"] == prediction["actor_forecasts"]
     assert sent["validation"] == prediction["validation"]
-    assert sent["action_forecasts"][0]["hazards"] == prediction["action_forecasts"][0]["hazards"]
+    assert (
+        assessments[0]["execution"]["predicted_end"]
+        == prediction["action_forecasts"][0]["first_cycle"]
+    )
     assert sent["observed_interactions"] == [{"actor_id": "g", "inference": "defeated_goomba"}]
     assert "trajectory" in prediction["action_forecasts"][0]
     assert (
-        "Estimated continuation" in provider.request["questions"]["next_action"].criteria["right"]
+        assessments[0]["continuation"]["actions"]
+        == prediction["action_forecasts"][0]["continuation"]["actions"]
     )
 
 
@@ -158,6 +172,9 @@ def test_open_crossing_evidence_reaches_provider_without_replacing_its_action():
     snapshot = replace(
         MarioStateParser().parse({"x_pos": 100, "y_pos": 79}),
         grounded=True,
+        frame_index=o.frame,
+        frames_until_action=8,
+        scheduled_action="noop",
         prediction=prediction,
     )
     provider = Provider("right_jump")

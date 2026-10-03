@@ -5,6 +5,30 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
+def _motion_summary(history, frame, x, y, *, max_vertical_span=None):
+    """Contiguous horizontal envelope, optionally bounded vertically too."""
+    window = []
+    min_x = max_x = x
+    min_y = max_y = y
+    for observed in reversed(history):
+        _, ox, oy, _ = observed
+        bounds = min(min_x, ox), max(max_x, ox), min(min_y, oy), max(max_y, oy)
+        if (
+            observed[0] != frame - len(window)
+            or bounds[1] - bounds[0] > 8
+            or (max_vertical_span is not None and bounds[3] - bounds[2] > max_vertical_span)
+        ):
+            break
+        min_x, max_x, min_y, max_y = bounds
+        window.append(observed)
+    return {
+        "frames": max(0, len(window) - 1),
+        "x_range": [min_x, max_x],
+        "y_range": [min_y, max_y],
+        "action_frames": dict(Counter(h[3] for h in window[:-1] if h[3] is not None)),
+    }
+
+
 @dataclass
 class ProgressMemory:
     level: tuple[int, int, int] | None = None
@@ -39,20 +63,6 @@ class ProgressMemory:
             stationary.append(observed)
         # Measure a contiguous spatial envelope, not distance from just the
         # latest position: alternating inputs can keep resetting stillness.
-        local = []
-        min_x = max_x = x
-        min_y = max_y = y
-        for observed in reversed(self.history):
-            _, ox, oy, _ = observed
-            bounds = min(min_x, ox), max(max_x, ox), min(min_y, oy), max(max_y, oy)
-            if (
-                observed[0] != frame - len(local)
-                or bounds[1] - bounds[0] > 8
-                or bounds[3] - bounds[2] > 4
-            ):
-                break
-            min_x, max_x, min_y, max_y = bounds
-            local.append(observed)
         return {
             "active": age >= 48,
             "no_progress_frames": age,
@@ -63,11 +73,8 @@ class ProgressMemory:
             "stationary_action_frames": dict(
                 Counter(h[3] for h in stationary[:-1] if h[3] is not None)
             ),
-            "local_motion": {
-                "frames": max(0, len(local) - 1),
-                "x_range": [min_x, max_x],
-                "y_range": [min_y, max_y],
-                "action_frames": dict(Counter(h[3] for h in local[:-1] if h[3] is not None)),
-            },
+            "local_motion": _motion_summary(self.history, frame, x, y, max_vertical_span=4),
+            # Failed jumps reset stillness, but not evidence of a horizontal loop.
+            "horizontal_motion": _motion_summary(self.history, frame, x, y),
             "reason": "no_meaningful_forward_progress" if age >= 48 else None,
         }

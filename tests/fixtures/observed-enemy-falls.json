@@ -1,0 +1,356 @@
+{
+  "source": "run-20261003T150530.769644Z.jsonl",
+  "episode": "a6fc3116db2743d0950a654bdb4849c8",
+  "cases": [
+    {
+      "decision": 143,
+      "actor": {
+        "identity": "0:0:goomba:9",
+        "kind": "goomba",
+        "x": 1149,
+        "y": 199
+      },
+      "velocity": {
+        "x": -0.714,
+        "y": 0.0,
+        "available": true
+      },
+      "terrain": {
+        "known_x": [
+          960,
+          1216
+        ],
+        "blocks": [
+          {
+            "left": 960,
+            "right": 1216,
+            "bottom": 239,
+            "top": 255
+          },
+          {
+            "left": 960,
+            "right": 1024,
+            "bottom": 223,
+            "top": 239
+          },
+          {
+            "left": 1056,
+            "right": 1120,
+            "bottom": 223,
+            "top": 239
+          },
+          {
+            "left": 960,
+            "right": 1024,
+            "bottom": 207,
+            "top": 223
+          },
+          {
+            "left": 1056,
+            "right": 1120,
+            "bottom": 207,
+            "top": 223
+          },
+          {
+            "left": 992,
+            "right": 1024,
+            "bottom": 191,
+            "top": 207
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 191,
+            "top": 207
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 191,
+            "top": 207
+          },
+          {
+            "left": 992,
+            "right": 1024,
+            "bottom": 175,
+            "top": 191
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 175,
+            "top": 191
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 175,
+            "top": 191
+          },
+          {
+            "left": 992,
+            "right": 1024,
+            "bottom": 159,
+            "top": 175
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 159,
+            "top": 175
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 159,
+            "top": 175
+          },
+          {
+            "left": 992,
+            "right": 1024,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 1104,
+            "right": 1120,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 960,
+            "right": 1024,
+            "bottom": 127,
+            "top": 143
+          },
+          {
+            "left": 1072,
+            "right": 1120,
+            "bottom": 127,
+            "top": 143
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 127,
+            "top": 143
+          },
+          {
+            "left": 960,
+            "right": 1216,
+            "bottom": 63,
+            "top": 79
+          },
+          {
+            "left": 960,
+            "right": 1216,
+            "bottom": 47,
+            "top": 63
+          }
+        ]
+      },
+      "actual_after_24_frames": {
+        "identity": "0:0:goomba:9",
+        "kind": "goomba",
+        "x": 1134,
+        "y": 178
+      }
+    },
+    {
+      "decision": 145,
+      "actor": {
+        "identity": "0:1:goomba:10",
+        "kind": "goomba",
+        "x": 1212,
+        "y": 135
+      },
+      "velocity": {
+        "x": -0.571,
+        "y": 0.0,
+        "available": true
+      },
+      "terrain": {
+        "known_x": [
+          996,
+          1252
+        ],
+        "blocks": [
+          {
+            "left": 996,
+            "right": 1252,
+            "bottom": 239,
+            "top": 255
+          },
+          {
+            "left": 996,
+            "right": 1024,
+            "bottom": 223,
+            "top": 239
+          },
+          {
+            "left": 1056,
+            "right": 1120,
+            "bottom": 223,
+            "top": 239
+          },
+          {
+            "left": 1216,
+            "right": 1252,
+            "bottom": 223,
+            "top": 239
+          },
+          {
+            "left": 996,
+            "right": 1024,
+            "bottom": 207,
+            "top": 223
+          },
+          {
+            "left": 1056,
+            "right": 1120,
+            "bottom": 207,
+            "top": 223
+          },
+          {
+            "left": 1216,
+            "right": 1252,
+            "bottom": 207,
+            "top": 223
+          },
+          {
+            "left": 996,
+            "right": 1024,
+            "bottom": 191,
+            "top": 207
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 191,
+            "top": 207
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 191,
+            "top": 207
+          },
+          {
+            "left": 996,
+            "right": 1024,
+            "bottom": 175,
+            "top": 191
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 175,
+            "top": 191
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 175,
+            "top": 191
+          },
+          {
+            "left": 996,
+            "right": 1024,
+            "bottom": 159,
+            "top": 175
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 159,
+            "top": 175
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 159,
+            "top": 175
+          },
+          {
+            "left": 996,
+            "right": 1024,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 1072,
+            "right": 1088,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 1104,
+            "right": 1120,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 143,
+            "top": 159
+          },
+          {
+            "left": 996,
+            "right": 1024,
+            "bottom": 127,
+            "top": 143
+          },
+          {
+            "left": 1072,
+            "right": 1120,
+            "bottom": 127,
+            "top": 143
+          },
+          {
+            "left": 1152,
+            "right": 1184,
+            "bottom": 127,
+            "top": 143
+          },
+          {
+            "left": 1216,
+            "right": 1252,
+            "bottom": 127,
+            "top": 143
+          },
+          {
+            "left": 996,
+            "right": 1252,
+            "bottom": 63,
+            "top": 79
+          },
+          {
+            "left": 996,
+            "right": 1252,
+            "bottom": 47,
+            "top": 63
+          }
+        ]
+      },
+      "actual_after_24_frames": {
+        "identity": "0:1:goomba:10",
+        "kind": "goomba",
+        "x": 1197,
+        "y": 103
+      }
+    }
+  ]
+}

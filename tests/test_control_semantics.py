@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from typesafe_mario.actions import Action
-from typesafe_mario.policy import Decision
+from typesafe_mario.policy import Decision, HeuristicPolicy
 from typesafe_mario.runner import run_episode
 
 
@@ -37,12 +37,12 @@ class MovingEnv:
         pass
 
 
-class RecordingPolicy:
+class RecordingPolicy(HeuristicPolicy):
     def __init__(self):
         self.snapshots = []
 
-    def choose(self, snapshot, actions):
-        self.snapshots.append(snapshot)
+    def resolve(self, prepared):
+        self.snapshots.append(prepared.snapshot)
         return Decision(Action.RIGHT_JUMP, 1.0, {"right_jump": 1.0}, 0.0)
 
 

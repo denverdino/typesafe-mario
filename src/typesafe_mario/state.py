@@ -6,6 +6,7 @@ from math import ceil
 from typing import Any
 
 from .actions import JUMP_ACTIONS
+from .observation import VisibleActorTracker, observe
 from .recovery import ProgressMemory
 from .routing import staging_geometry
 from .terrain import is_support_tile, jump_reach_reference, landing_projection, navigation
@@ -17,7 +18,12 @@ ENEMY_NAMES: dict[int, str] = {
     0x06: "goomba",
     0x05: "hammer_bro",
     0x07: "bloober",
-    0x0E: "cheep_cheep",
+    0x0A: "grey_cheep_cheep",
+    0x0B: "red_cheep_cheep",
+    0x0E: "green_paratroopa_jump",
+    0x0F: "red_paratroopa",
+    0x10: "green_paratroopa_fly",
+    0x14: "flying_cheep_cheep",
     0x0D: "piranha_plant",
     0x12: "spiny",
     0x2D: "bowser",
@@ -112,6 +118,7 @@ class MarioSnapshot:
     horizontal_speed_exact: float | None = None
     side_exit_pipe: dict[str, Any] | None = None
     enemy_tracks: tuple[EnemyTrack, ...] = field(default_factory=tuple)
+    visible_actor_ids: dict[str, str] = field(default_factory=dict)
     prediction: dict[str, Any] | None = None
     prediction_traces: tuple[dict[str, Any], ...] = field(default_factory=tuple)
     recovery: dict[str, Any] = field(default_factory=dict)
@@ -734,11 +741,19 @@ class MarioSnapshot:
             return "advanced"
         return "no_progress_yet"
 
-    def to_debug_state(self) -> dict[str, Any]:
+    def to_debug_state(self, *, include_model_prediction: bool = True) -> dict[str, Any]:
         from .observation import model_state
 
+        observation = model_state(self)
+        if not include_model_prediction:
+            observation.pop("prediction", None)
         return {
-            "model_state": model_state(self),
+            "model_state": observation,
+            "diagnostic_contract": {
+                "prediction_source": "prediction_details",
+                "legacy_estimates": "Snapshot.to_state hazard/trajectory are diagnostic only",
+                "actor_coordinates": "visible_enemies use screen y downward; model uses y upward",
+            },
             "raw": {
                 "player_state": self.player_state,
                 "coins": self.coins,
@@ -817,6 +832,7 @@ class MarioStateParser:
         self._last_enemy_dx: dict[int, int] = {}
         self._last_enemy_vertical: dict[int, tuple[int, int, int]] = {}
         self._enemy_tracker = EnemyTracker()
+        self._visible_actor_tracker = VisibleActorTracker()
         self._progress_memory = ProgressMemory()
         self._tracked_action: str | None = None
         self._action_start_x = 0
@@ -839,6 +855,7 @@ class MarioStateParser:
             decision_horizon_frames=self.decision_horizon_frames,
         )
         self._enemy_tracker.epoch = epoch
+        self._visible_actor_tracker.epoch = epoch
 
     @staticmethod
     def _integer(info: Mapping[str, Any], key: str, default: int = 0) -> int:
@@ -918,6 +935,9 @@ class MarioStateParser:
                     )
                     if int(ram[0x16 + slot]) == 0x0D
                     else None,
+                    y_high=int(ram[0xB6 + slot]),
+                    engine_direction_raw=int(ram[0x46 + slot]),
+                    active_flag=int(ram[0x0F + slot]),
                 )
                 for slot in range(5)
                 if ram[0xF + slot]
@@ -1092,6 +1112,10 @@ class MarioStateParser:
         self._last_x = x
         self._last_y = y
         self._last_jump_phase = jump_phase
+        snapshot = replace(
+            snapshot,
+            visible_actor_ids=self._visible_actor_tracker.update(observe(snapshot)),
+        )
         return snapshot
 
     @staticmethod

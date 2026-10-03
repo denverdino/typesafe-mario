@@ -19,6 +19,7 @@ def _demo_ram() -> bytearray:
     ram[0x0016] = 0x06
     ram[0x006E] = 0
     ram[0x0087] = 214
+    ram[0x00B6] = 1
     ram[0x00CF] = 79
     # Fill the tile-map row immediately below Mario with solid ground.
     ground_row = (79 + 16 - 32) // 16
@@ -58,6 +59,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="typesafe-mario")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("state-demo", help="Show structured and text state without API calls")
+    analyze = subparsers.add_parser(
+        "analyze-log", help="Summarize or compare runs without API calls"
+    )
+    analyze.add_argument("paths", type=Path, nargs="+")
+    analyze.add_argument("--json", action="store_true", help="Print machine-readable summaries")
+    calibrate = subparsers.add_parser(
+        "calibrate", help="Measure physics with real opening probes, without Jev"
+    )
+    calibrate.add_argument("--env", default="SuperMarioBros-1-2-v0")
+    calibrate.add_argument("--seed", type=int, default=123)
+    calibrate.add_argument("--output", type=Path, default=Path("artifacts/physics-profile.json"))
 
     play = subparsers.add_parser("play", help="Run a Mario episode")
     play.add_argument("--env", default="SuperMarioBros-1-1-v0")
@@ -69,7 +81,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     play.add_argument("--max-decisions", type=int, default=2000)
     play.add_argument("--seed", type=int, default=123)
+    play.add_argument(
+        "--physics-profile", type=Path, help="Reuse measured observation-only physics"
+    )
     play.add_argument("--policy", choices=("typesafe", "heuristic"), default="typesafe")
+    play.add_argument(
+        "--diagnostic-questions",
+        action="store_true",
+        help="Also ask Jev for non-controlling jump intent and danger diagnostics",
+    )
     play.add_argument(
         "--display",
         choices=("dashboard", "game", "none"),
@@ -102,8 +122,28 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "state-demo":
         return state_demo()
+    if args.command == "calibrate":
+        from .calibration import collect_calibration
+
+        profile = collect_calibration(env_id=args.env, seed=args.seed, output=args.output)
+        print(json.dumps(profile, indent=2))
+        return 0
+    if args.command == "analyze-log":
+        from .analysis import format_summary, summarize_run
+
+        runs = [summarize_run(path) for path in args.paths]
+        print(
+            json.dumps({"runs": runs}, indent=2)
+            if args.json
+            else "\n\n".join(format_summary(run) for run in runs)
+        )
+        return 0
     if args.command == "play":
-        policy = TypeSafePolicy() if args.policy == "typesafe" else HeuristicPolicy()
+        policy = (
+            TypeSafePolicy(diagnostic_questions=args.diagnostic_questions)
+            if args.policy == "typesafe"
+            else HeuristicPolicy()
+        )
         log_path = run_episode(
             env_id=args.env,
             policy=policy,
@@ -116,6 +156,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             resume_log=args.resume_log,
             resume_decision=args.resume_decision,
             resume_episode=args.resume_episode,
+            physics_profile=args.physics_profile,
         )
         print(f"Run log: {log_path.resolve()}")
         return 0

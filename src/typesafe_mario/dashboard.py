@@ -219,7 +219,7 @@ class LiveDashboard:
         x = panel_x + 18
         width = c.panel_width - 42
         y = game_y
-        self._text("World 1–1", self.font_label, t.muted, x, y)
+        self._text(f"World {snapshot.world}–{snapshot.stage}", self.font_label, t.muted, x, y)
         self._text(f"Decision {decision_index:04d}", self.font_small, t.muted, x + width - 100, y)
         y += 27
 
@@ -272,12 +272,21 @@ class LiveDashboard:
         self._text("Situation", self.font_label, t.text, x, y)
         y += 24
         jump = decision.jump_needed_probability if decision else None
-        danger = clamp01((decision.danger_score or 0.0) / 2.0) if decision else 0.0
+        danger = decision.danger_score if decision else None
         intent = decision.jump_intent if decision and decision.jump_intent else "unknown"
-        self._bar(label=f"Start/hold A ({intent})", value=clamp01(jump), x=x, y=y, width=width)
+        if jump is None:
+            self._text("Jump diagnostic: unavailable", self.font_small, t.muted, x, y)
+        else:
+            self._bar(label=f"Start/hold A ({intent})", value=clamp01(jump), x=x, y=y, width=width)
         y += 40
-        danger_color = t.danger if danger >= 0.66 else t.warning
-        self._bar(label="Immediate danger", value=danger, x=x, y=y, width=width, color=danger_color)
+        if danger is None:
+            self._text("Danger diagnostic: unavailable", self.font_small, t.muted, x, y)
+        else:
+            danger = clamp01(danger / 2.0)
+            danger_color = t.danger if danger >= 0.66 else t.warning
+            self._bar(
+                label="Immediate danger", value=danger, x=x, y=y, width=width, color=danger_color
+            )
         y += 43
 
         enemies = ", ".join(enemy.kind for enemy in snapshot.enemies) or "none"

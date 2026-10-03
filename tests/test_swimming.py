@@ -81,7 +81,9 @@ def test_falling_swimmer_keeps_stroke_actions_without_prediction():
     provider = Provider("right_jump")
     decision = policy(provider).choose(s, tuple(Action))
     assert decision.action == Action.RIGHT_JUMP
-    assert set(provider.request["questions"]["next_action"].criteria) == {a.value for a in Action}
+    assert set(provider.request["questions"]["next_action"]["criteria"]) == {
+        a.value for a in Action
+    }
 
 
 def test_observed_water_forecasts_compare_strokes_without_guaranteeing_survival(underwater):

@@ -3,6 +3,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from prediction_helpers import assess_forecast
 
 from typesafe_mario.actions import ACTION_TO_INDEX, Action
 from typesafe_mario.runner import create_mario_env
@@ -54,7 +55,7 @@ def test_staging_prediction_has_no_verified_route_or_automatic_override(approach
     result = predicted(s)
     assert model_state(result)["terrain"]["blocks"]
     assert all("route" not in f for f in result.prediction["action_forecasts"])
-    requested = Action(result.prediction["risk_control"]["candidate_actions"][-1])
+    requested = Action(assess_forecast(result.prediction)["candidate_actions"][-1])
     choice = policy(Provider(requested.value)).choose(result, tuple(Action))
     assert choice.action == requested
     if choice.selection is not None:

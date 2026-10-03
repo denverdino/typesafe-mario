@@ -175,7 +175,7 @@ def test_shell_evidence_and_return_warning_reach_provider():
     p.observe(o)
     prediction = p.forecast(o, tuple(Action), cycle=8)
     provider = Provider("jump")
-    snapshot = replace(MarioStateParser().parse({}), prediction=prediction)
+    snapshot = replace(MarioStateParser().parse({}), prediction=prediction, frame_index=o.frame)
     decision = policy(provider).choose(snapshot, tuple(Action))
     sent = provider.request["state"]["prediction"]
     actor = sent["actor_forecasts"][0]

@@ -13,6 +13,9 @@ class EnemyMeasurement:
     y: int
     engine_state: int
     plant: dict[str, Any] | None = None
+    y_high: int = 1
+    engine_direction_raw: int | None = None
+    active_flag: int = 1
 
 
 @dataclass(frozen=True)
@@ -39,6 +42,9 @@ class EnemyTrack:
             "slot": m.slot,
             "kind": m.kind,
             "engine_state": m.engine_state,
+            "engine_direction_raw": m.engine_direction_raw,
+            "active_flag": m.active_flag,
+            "y_high": m.y_high,
             "position": {"x": m.x, "y": m.y},
             "velocity": {"x": vx, "y": vy},
             "motion": "unknown"
@@ -90,7 +96,10 @@ class EnemyTracker:
             old = self.tracks.get(m.slot)
             new_identity = (
                 old is None
+                or not old.observed
+                or old.last_seen_frame != frame - 1
                 or old.measurement.kind_id != m.kind_id
+                or old.measurement.y_high != m.y_high
                 or abs(old.measurement.x - m.x) > 32
                 or abs(old.measurement.y - m.y) > 32
             )

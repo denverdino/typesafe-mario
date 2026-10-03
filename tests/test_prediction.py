@@ -4,6 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from prediction_helpers import assess_forecast
 
 from typesafe_mario.actions import ACTION_TO_INDEX, Action
 from typesafe_mario.runner import create_mario_env
@@ -78,7 +79,7 @@ def test_causal_validation_waits_for_actual_selected_actions(scene):
             info, env.unwrapped.ram, previous_action="right_run_jump", previous_reward=reward
         )
         p.observe(observe(snapshot))
-    p.expect(result, Action.LEFT, application_frame=snapshot.frame_index)
+    p.expect(result, Action.LEFT, apply_at_frame=snapshot.frame_index)
     for _ in range(8):
         _, reward, _, _, info = env.step(ACTION_TO_INDEX[Action.LEFT])
         snapshot = parser.parse(
@@ -141,7 +142,7 @@ def test_recorded_first_enemy_failure_warns_early_and_resolves_ceiling():
                         scheduled_action=Action.RIGHT_RUN_JUMP,
                     )
         assert s.dead and s.x == 315  # Exact recorded execution, no counterfactual trials.
-        assert forecasts[80]["risk_control"]["candidate_actions"] == ["left"]
+        assert assess_forecast(forecasts[80])["candidate_actions"] == ["left"]
         assert forecasts[88]["committed_future"]["y"] < 117
         forward = next(
             f for f in forecasts[88]["action_forecasts"] if f["action"] == "right_run_jump"
@@ -155,7 +156,9 @@ def test_recorded_first_enemy_failure_warns_early_and_resolves_ceiling():
     "name,frame,kept,rejected",
     [
         ("world1-1-gap-release", 664, "right_run_jump", "right"),
-        ("world1-2-falling-enemy", 1072, "left", "right"),
+        # Falling phase is uncertain: keep braking, reject the nominal running
+        # collision. Walking followed by braking is no longer certified worse.
+        ("world1-2-falling-enemy", 1072, "left", "right_run"),
     ],
 )
 def test_recorded_failure_context_keeps_a_preventive_action(name, frame, kept, rejected):
@@ -180,8 +183,8 @@ def test_recorded_failure_context_keeps_a_preventive_action(name, frame, kept, r
         result = predictor.forecast(
             observe(s), tuple(Action), cycle=8, delay=8, scheduled_action=buttons[frame]
         )
-        assert kept in result["risk_control"]["candidate_actions"]
-        assert rejected not in result["risk_control"]["candidate_actions"]
+        assert kept in assess_forecast(result)["candidate_actions"]
+        assert rejected not in assess_forecast(result)["candidate_actions"]
     finally:
         env.close()
 

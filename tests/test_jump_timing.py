@@ -3,6 +3,7 @@
 from dataclasses import replace
 
 import pytest
+from prediction_helpers import assess_forecast
 from test_observation_prediction import floor_scene
 
 from typesafe_mario.actions import Action
@@ -57,7 +58,7 @@ def test_underside_uncertainty_cannot_be_a_clear_braking_refuge():
     r = p.forecast(o, (Action.LEFT,), cycle=8, delay=8, scheduled_action=Action.RIGHT)
     assert r["committed_future"]["x"] > 825
     assert r["action_forecasts"][0]["control_risk"]["uncertain_wall_contact"]
-    assert r["risk_control"]["status"] == "no_lower_risk_option"
+    assert assess_forecast(r)["status"] == "no_lower_risk_option"
 
 
 def test_stomp_during_committed_input_does_not_invent_grounded_application():
@@ -81,7 +82,7 @@ def test_stomp_during_committed_input_does_not_invent_grounded_application():
     result = p.forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT_RUN_JUMP)
     assert not result["committed_future"]["grounded_estimate"]
     assert result["committed_interactions"][0]["actor_id"] == "g1"
-    assert result["risk_control"]["status"] == "no_lower_risk_option"
+    assert assess_forecast(result)["status"] == "no_lower_risk_option"
     assert all(
         b["first_cycle_risk"]["uncertain_committed_interaction"] for b in result["action_forecasts"]
     )
@@ -132,7 +133,7 @@ def test_only_selected_plan_is_carried_forward_and_rechecked():
     first = p.forecast(o, tuple(Action), cycle=8)
     selected = next(b for b in first["action_forecasts"] if b["action"] == "right_run")
     assert "plan_followup" not in p.forecast(o, tuple(Action), cycle=8)
-    p.expect(first, Action.RIGHT_RUN, application_frame=0)
+    p.expect(first, Action.RIGHT_RUN, apply_at_frame=0)
     result = p.forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT_RUN)
     followup = result["plan_followup"]
     assert followup["action"] == selected["continuation"]["actions"][1]
@@ -151,7 +152,7 @@ def test_rechecked_plan_keeps_new_enemy_risk_and_cannot_override_action():
     p = Predictor()
     p.observe(o)
     first = p.forecast(o, tuple(Action), cycle=8)
-    p.expect(first, Action.RIGHT_RUN, application_frame=0)
+    p.expect(first, Action.RIGHT_RUN, apply_at_frame=0)
     # A newly observed nearby enemy invalidates the clear route, while the
     # actually selected run input is already committed for seven more frames.
     o = replace(o, frame=1, previous_action="right_run", actors=(Actor("g", "goomba", 94, 71),))
@@ -159,10 +160,17 @@ def test_rechecked_plan_keeps_new_enemy_risk_and_cannot_override_action():
     result = p.forecast(o, tuple(Action), cycle=8, delay=7, scheduled_action=Action.RIGHT_RUN)
     followup = result["plan_followup"]
     assert followup["failure"] or followup["warnings"]
-    assert result["risk_control"]["status"] == "no_lower_risk_option"
+    assert assess_forecast(result)["status"] == "no_lower_risk_option"
     provider = Provider("left")
     decision = policy(provider).choose(
-        replace(MarioStateParser().parse({}), prediction=result), tuple(Action)
+        replace(
+            MarioStateParser().parse({}),
+            prediction=result,
+            frame_index=result["observed_at_frame"],
+            frames_until_action=result["action_delay_frames"],
+            decision_horizon_frames=result["action_cycle_frames"],
+        ),
+        tuple(Action),
     )
     sent = provider.request["state"]["prediction"]
     assert sent["plan_followup"] == followup
@@ -183,7 +191,7 @@ def test_simultaneous_contact_during_queue_cannot_remove_the_second_enemy():
     p.observe(o)
     r = p.forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.NOOP)
     assert r["committed_future"]["valid_for_application"] is False
-    assert r["risk_control"]["status"] == "no_lower_risk_option"
+    assert assess_forecast(r)["status"] == "no_lower_risk_option"
     assert r["observed_interactions"] == []
     assert {a["id"] for a in r["actor_forecasts"]} == {"g", "k"}
 
@@ -192,8 +200,8 @@ def test_settling_tail_is_bounded_by_two_actual_control_cycles():
     o = floor_scene(x=80, y=120, vx=0, vy=3, grounded=False, previous_action="noop")
     r = Predictor().forecast(o, (Action.NOOP,), cycle=2)
     plan = r["action_forecasts"][0]["continuation"]
-    assert plan["evaluated_frames"] <= 16  # Six search cycles plus two settling cycles.
-    assert "unresolved_flight" in plan["warnings"]
+    assert 48 <= plan["evaluated_frames"] <= 52  # 48 physical frames plus two control cycles.
+    assert plan["end"]["grounded_estimate"]
 
 
 def test_settling_tail_progress_is_averaged_over_evaluated_frames():

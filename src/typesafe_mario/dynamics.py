@@ -1,6 +1,7 @@
 """Bounded physics priors calibrated only from real consecutive observations."""
 
 from collections import defaultdict, deque
+from math import isfinite
 from statistics import fmean
 
 from .actions import JUMP_ACTIONS, Action
@@ -12,6 +13,7 @@ PRIORS = {
     "run_accel": (0.18, 0.01, 0.5),
     "brake_accel": (0.24, 0.01, 0.8),
     "air_accel": (0.08, 0.01, 0.3),
+    "air_walk_speed": (1.6, 1.4, 2.0),
     "friction": (0.08, 0.0, 0.4),
     "gravity_hold": (0.18, 0.02, 0.5),
     "gravity_hold_fast": (0.18, 0.02, 0.5),
@@ -38,11 +40,24 @@ def position_fit(values):
 
 
 class Dynamics:
-    def __init__(self):
+    def __init__(self, *, calibrated=None):
+        self.calibrated = dict(calibrated or {})
+        for name, value in self.calibrated.items():
+            if (
+                name not in PRIORS
+                or not isfinite(value)
+                or not PRIORS[name][1] <= value <= PRIORS[name][2]
+            ):
+                raise ValueError(f"Invalid calibrated parameter: {name}")
         self.samples = defaultdict(lambda: deque(maxlen=64))
 
     def value(self, name: str) -> float:
         prior, lo, hi = PRIORS[name]
+        if name in self.calibrated:
+            # Controlled experiments are the stable reference. Gameplay samples
+            # remain diagnostics; they must not silently overwrite a measured
+            # profile with contact-contaminated estimates.
+            return self.calibrated[name]
         values = self.samples.get(name, ())
         return max(lo, min(hi, (prior * 8 + sum(values)) / (8 + len(values))))
 
@@ -55,7 +70,13 @@ class Dynamics:
         # Pixel quantization produces zero and occasionally negative estimates
         # of positive acceleration. Filtering them by the physical parameter
         # bounds biases the learned mean upward; clamp the fitted value instead.
-        if name not in ("jump_speed", "jump_speed_fast", "stomp_speed", "swim_impulse"):
+        if name not in (
+            "jump_speed",
+            "jump_speed_fast",
+            "stomp_speed",
+            "swim_impulse",
+            "air_walk_speed",
+        ):
             lo, hi = -1.2, 1.2
         if name in ("gravity_hold", "gravity_hold_fast", "gravity_fall"):
             # During release, two quantized position differences can drop by
@@ -100,6 +121,14 @@ class Dynamics:
         # individual 0/1 velocity pairs would censor the accelerating phase.
         end_velocity, acceleration = position_fit([h.x for h in window])
         start_velocity = end_velocity - 8 * acceleration
+        if (
+            abs(acceleration) < 0.025
+            and 1.4 < d * start_velocity < 2.0
+            and 1.4 < d * end_velocity < 2.0
+        ):
+            # A sustained plateau identifies walking-flight speed, whereas
+            # accelerating and reversing windows identify acceleration only.
+            self.add("air_walk_speed", d * (last.x - first.x) / 8)
         # B alone does not establish a running flight. Exclude windows near
         # the walking cap, where constant speed cannot identify acceleration.
         if max(d * start_velocity, d * end_velocity) < 1.4:
@@ -200,6 +229,7 @@ class Dynamics:
             "parameters": {
                 name: {
                     "estimate": round(self.value(name), 3),
+                    "calibrated_prior": self.calibrated.get(name),
                     "samples": len(self.samples.get(name, ())),
                     "observed_mean": round(fmean(self.samples[name]), 3)
                     if self.samples.get(name)

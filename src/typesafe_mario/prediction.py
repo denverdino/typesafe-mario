@@ -13,17 +13,17 @@ from time import perf_counter
 
 from .actions import JUMP_ACTIONS, Action, first_frame_action
 from .actor_motion import WALKERS, actor_path
-from .continuation import Node, actor_contacts, continuations
+from .continuation import MAX_SEARCH_FRAMES, Node, actor_contacts, continuations
 from .dynamics import Dynamics, direction, position_fit
-from .landing import landing_window
+from .landing import landing_window, reaction_tail_frames
 from .observation import Observation
-from .risk import assess_risk
 from .routing import enemy_crossing_geometry, underpass_goal
 from .shells import ObservedShells, kick_forecasts, possible_ground_kick
+from .timing import DecisionTiming
 
 BACKEND = "observation_dynamics"
-VERSION = 45
-MAX_HORIZON = 96
+VERSION = 54
+MAX_HORIZON = MAX_SEARCH_FRAMES
 
 
 @dataclass
@@ -72,7 +72,7 @@ def _advance(
         if not s.grounded and not o.swimming:
             # Observed flight speed regime persists across button changes.
             # Pressing B after walking takeoff cannot create a running flight.
-            cap = 3.0 if s.fast_jump else 1.6
+            cap = 3.0 if s.fast_jump else dynamics.value("air_walk_speed")
         # Releasing B does not instantly erase existing momentum.
         s.vx += d * accel if d * s.vx < cap else 0
         s.vx = max(-3.5, min(3.5, s.vx))
@@ -106,6 +106,11 @@ def _advance(
         events.append("observed_left_boundary")
     for b in o.blocks:
         if s.y < b.top - 0.01 and s.y + o.height > b.bottom + 0.01:
+            # Resolve same-frame upward clearance before a side stop. Using
+            # only the old height can invent a collision just as Mario clears
+            # a pipe/brick top, erasing the horizontal momentum of the flight.
+            if s.vy > 0 and ny >= b.top:
+                continue
             # Repeated observed pipe contacts put the wall at x+14. The sprite
             # is16px wide, but its horizontal collision body has a2px inset.
             right_hit = s.vx > 0 and s.x + 2 < b.left and nx + 14 > b.left
@@ -199,6 +204,17 @@ def _estimate(m: Motion, frame: int, *, uncertain: bool) -> dict:
     }
 
 
+def _include_motion_variants(estimate, variants):
+    """Keep topology-changing speed sensitivity inside the reported envelope."""
+    for motion in variants:
+        other = _estimate(motion, estimate["frame"], uncertain=False)
+        for key in ("x_range", "y_range"):
+            estimate[key] = [
+                min(estimate[key][0], other[key][0]),
+                max(estimate[key][1], other[key][1]),
+            ]
+
+
 def _lower_floor_catches(m, estimate, action, o, parameters):
     """Check an uncertain step-down using visible geometry and unchanged input."""
     if action in JUMP_ACTIONS or not any(32 <= b.top < m.y - 1 for b in o.blocks):
@@ -236,8 +252,9 @@ def _lower_floor_catches(m, estimate, action, o, parameters):
 class Predictor:
     """Per-episode learning and validation, updated only by real observations."""
 
-    def __init__(self):
-        self.dynamics = Dynamics()
+    def __init__(self, *, physics_parameters=None):
+        self.physics_parameters = dict(physics_parameters or {})
+        self.dynamics = Dynamics(calibrated=self.physics_parameters)
         self.history = deque(maxlen=16)
         self.pending = []
         self.errors = deque(maxlen=256)
@@ -308,7 +325,7 @@ class Predictor:
             or abs(o.x - last.x) > 32 * max(1, o.frame - last.frame)
             or abs(o.y - last.y) > 32 * max(1, o.frame - last.frame)
         ):
-            self.__init__()
+            self.__init__(physics_parameters=self.physics_parameters)
             last = None
         if (
             not o.motion_reliable
@@ -323,7 +340,7 @@ class Predictor:
                 self.selected_plan = None
             elif self.selected_plan:
                 plan = self.selected_plan
-                step = o.frame - 1 - plan["application_frame"]
+                step = o.frame - 1 - plan["apply_at_frame"]
                 index = step // plan["cycle"]
                 if 0 <= index < len(plan["actions"]):
                     expected = plan["actions"][index]
@@ -458,12 +475,11 @@ class Predictor:
             "range_coverage": round(sum(e[2] for e in self.errors) / n, 3) if n else None,
         }
 
-    def expect(self, prediction: dict, action: Action, *, application_frame: int):
+    def expect(self, prediction: dict, action: Action, *, apply_at_frame: int):
         """Register only the action actually selected and about to execute."""
         if (
             prediction.get("backend") != BACKEND
-            or prediction.get("observation_frame", -1) + prediction.get("application_frame", 0)
-            != application_frame
+            or prediction.get("apply_at_frame") != apply_at_frame
         ):
             return
         branch = next(
@@ -472,20 +488,20 @@ class Predictor:
         if branch is not None:
             plan = branch.get("continuation", {})
             self.selected_plan = {
-                "application_frame": application_frame,
+                "apply_at_frame": apply_at_frame,
                 "cycle": prediction["action_cycle_frames"],
                 "actions": tuple(Action(a) for a in plan.get("actions", ())),
             }
             self.pending.append(
                 (
-                    application_frame + prediction["action_cycle_frames"],
-                    application_frame,
+                    apply_at_frame + prediction["action_cycle_frames"],
+                    apply_at_frame,
                     action,
                     branch["first_cycle"],
                 )
             )
 
-    def _enemy_motion(self, o: Observation) -> dict:
+    def _enemy_motion(self, o: Observation, *, fall_gravity=None) -> dict:
         result = {}
         # Never consume observations from a future frame, even if asked to forecast
         # a historical observation. Only a contiguous visible track supplies velocity.
@@ -505,7 +521,7 @@ class Predictor:
                 ):
                     break
                 samples.append((h.frame, old))
-                if len(samples) >= 8:
+                if len(samples) >= 9:
                     break
             if len(samples) > 1:
                 f, a = samples[-1]
@@ -518,7 +534,16 @@ class Predictor:
                     # against motion before the observed reversal.
                     latest = next(dx for dx in steps if dx)
                     vx = sum(abs(dx) for dx in steps) / dt * (1 if latest > 0 else -1)
-                result[actor.identity] = (vx, (actor.y - a.y) / dt, True)
+                vy = (actor.y - a.y) / dt
+                if actor.kind in WALKERS and len(samples) == 9:
+                    heights = [a.y for _, a in reversed(samples)]
+                    if all(a >= b for a, b in pairwise(heights)) and heights[0] > heights[-1]:
+                        fitted_vy, acceleration = position_fit(heights)
+                        if -5 <= fitted_vy <= 0 and -0.65 <= acceleration <= -0.05:
+                            vy = fitted_vy
+                            if fall_gravity is not None:
+                                fall_gravity[actor.identity] = -acceleration
+                result[actor.identity] = (vx, vy, True)
             else:
                 result[actor.identity] = (0, 0, False)
         return result
@@ -551,7 +576,8 @@ class Predictor:
         scheduled_action: Action | None = None,
         scheduled_first_frame_action: Action | None = None,
     ) -> dict:
-        if cycle < 1 or delay < 0 or (delay and scheduled_action is None):
+        timing = DecisionTiming(o.frame, delay, cycle)
+        if delay and scheduled_action is None:
             raise ValueError("Positive cycle, nonnegative delay and committed buttons are required")
         if self.history and o.frame < self.history[-1].frame:
             raise ValueError(
@@ -564,9 +590,8 @@ class Predictor:
             "backend": BACKEND,
             "version": VERSION,
             "status": "estimated",
-            "observation_frame": o.frame,
-            "application_frame": delay,
-            "action_cycle_frames": cycle,
+            **timing.to_state(),
+            "frame_reference": "offset_from_observed_at_frame",
             "action_forecasts": [],
             "assumptions": "Approximate observation-calibrated motion and visible static tiles. "
             "Each candidate repeats at cycle boundaries. No emulator trials, hidden timers "
@@ -616,13 +641,19 @@ class Predictor:
         ):
             vx = (o.x - recent[0].x) / 4
         velocity_history = list(self.history)[-9:]
+        takeoff_window = (
+            not o.grounded
+            and o.previous_action in JUMP_ACTIONS
+            and not self.bouncing
+            and not any(not a.grounded and b.grounded for a, b in pairwise(velocity_history))
+        )
         if (
             len(velocity_history) == 9
             and velocity_history[-1] == o
             and all(
                 h.frame == o.frame - 8 + i
                 and h.level == o.level
-                and h.grounded == o.grounded
+                and (h.grounded == o.grounded or takeoff_window)
                 and h.swimming == o.swimming
                 and (i == 0 or h.previous_action == o.previous_action)
                 and h.motion_reliable
@@ -634,6 +665,8 @@ class Predictor:
             # The short displacement average describes past midpoint speed.
             # Fit the current end-of-step speed during a continuous input so
             # accelerating approaches and braking retreats do not inherit it.
+            # A takeoff changes vertical mode, not horizontal continuity; keep
+            # that window rather than falling back to its stale midpoint speed.
             fitted_vx, acceleration = position_fit([h.x for h in velocity_history])
             displacement = o.x - velocity_history[0].x
             if (
@@ -693,6 +726,26 @@ class Predictor:
         motion = Motion(
             o.x, o.y, vx, vy, o.grounded, o.previous_action, bool(self.fast_jump), self.bouncing
         )
+        variant_speeds = []
+        if (
+            delay
+            and o.grounded
+            and not o.swimming
+            and o.motion_reliable
+            and o.previous_action is not None
+            and direction(Action(o.previous_action)) * direction(scheduled_action) < 0
+        ):
+            # Pixel positions do not resolve instantaneous speed while changing
+            # direction. A one-pixel/frame error can decide whether a jump hits
+            # a low ceiling. Propagate both speeds through the committed input
+            # and executable cycles; these are model paths, never emulator trials.
+            variant_speeds = [max(-3.5, min(3.5, vx + dv)) for dv in (-1, 1)]
+            result["motion_sensitivity"] = {
+                "reason": "ground_input_reversal",
+                "initial_vx_range": variant_speeds,
+                "assumption": "Heuristic one-pixel/frame speed sensitivity, not a confidence bound. "
+                "Different ceiling/wall outcomes invalidate a clear-route comparison.",
+            }
         if len(self.history) >= 2 and self.history[-1] == o:
             previous = self.history[-2]
             motion.jump_pending = bool(
@@ -712,8 +765,10 @@ class Predictor:
                 "evidence": "repeated_left_input_without_horizontal_motion_at_visible_edge",
                 "assumption": "Applies while the observed viewport is unchanged; motion remains estimated.",
             }
+        motion_variants = [replace(motion, vx=speed) for speed in variant_speeds]
         parameters = self.dynamics.fitted()
-        enemy_motion = self._enemy_motion(o)
+        fall_gravity = {}
+        enemy_motion = self._enemy_motion(o, fall_gravity=fall_gravity)
         for identity, shell in shells.items():
             enemy_motion[identity] = (shell.vx, shell.vy, shell.velocity_known)
         active_actors = tuple(
@@ -724,7 +779,13 @@ class Predictor:
         actor_observation = replace(o, actors=active_actors)
         # Build once for both the immutable input prefix and candidate paths.
         actor_paths = {
-            a.identity: actor_path(a, enemy_motion[a.identity], o, delay + MAX_HORIZON)
+            a.identity: actor_path(
+                a,
+                enemy_motion[a.identity],
+                o,
+                delay + MAX_HORIZON + reaction_tail_frames(cycle, parameters.value("brake_accel")),
+                gravity=fall_gravity.get(a.identity, 0.25),
+            )
             for a in active_actors
         }
         committed = Node(motion)
@@ -747,6 +808,29 @@ class Predictor:
             )
             previous = motion
             motion, events = _advance(motion, actual, o, parameters)
+            for i, variant in enumerate(motion_variants):
+                variant_action = (
+                    (
+                        scheduled_first_frame_action
+                        or first_frame_action(
+                            scheduled_action,
+                            grounded=variant.grounded,
+                            previous_action=variant.previous_action,
+                            swimming=o.swimming,
+                        )
+                    )
+                    if frame == 0
+                    else scheduled_action
+                )
+                motion_variants[i], variant_events = _advance(
+                    variant, variant_action, o, parameters
+                )
+                if {"ceiling_contact", "wall_contact"} & set(variant_events) != {
+                    "ceiling_contact",
+                    "wall_contact",
+                } & set(events):
+                    committed_warnings.add("uncertain_wall_contact")
+                    committed_events.append("uncertain_wall_contact")
             if "possible_landing" in events:
                 envelope = _estimate(previous, frame + 1, uncertain=not o.motion_reliable)
                 vertical_margin = (envelope["y_range"][1] - envelope["y_range"][0]) / 2
@@ -771,6 +855,7 @@ class Predictor:
             if committed.stopped:
                 break
         result["committed_future"] = _estimate(motion, delay, uncertain=not o.motion_reliable)
+        _include_motion_variants(result["committed_future"], motion_variants)
         uncertain_takeoff = bool(
             not o.swimming
             and motion.grounded
@@ -854,6 +939,7 @@ class Predictor:
                 )
         for action in actions:
             m = replace(motion)
+            variants = [replace(v) for v in motion_variants]
             unknowns = {"model_error", "unseen_spawns"}
             if o.swimming:
                 unknowns.add("swimming_dynamics")
@@ -892,6 +978,27 @@ class Predictor:
                 )
                 m, emitted = _advance(m, actual, o, parameters)
                 frame = delay + step + 1
+                if frame <= control_risk["through_frame"]:
+                    for i, variant in enumerate(variants):
+                        variant_action = (
+                            first_frame_action(
+                                action,
+                                grounded=variant.grounded,
+                                previous_action=variant.previous_action,
+                                swimming=o.swimming,
+                            )
+                            if step % cycle == 0
+                            else action
+                        )
+                        variants[i], variant_events = _advance(
+                            variant, variant_action, o, parameters
+                        )
+                        if {"ceiling_contact", "wall_contact"} & set(variant_events) != {
+                            "ceiling_contact",
+                            "wall_contact",
+                        } & set(emitted):
+                            control_risk["uncertain_wall_contact"] = True
+                            unknowns.add("uncertain_wall_contact")
                 if "uncertain_wall_contact" in emitted:
                     unknowns.add("uncertain_wall_contact")
                     if frame <= control_risk["through_frame"]:
@@ -912,9 +1019,12 @@ class Predictor:
                         first_landing = landing
                     if frame <= control_risk["through_frame"] or flight_committed:
                         control_risk["landing_contact_window"] |= any(
-                            e["contact_before_escape"] for e in landing["enemies"]
+                            e["contact_before_escape"] or not e["reaction_window_complete"]
+                            for e in landing["enemies"]
                         )
                 estimate = _estimate(m, frame, uncertain=not o.motion_reliable)
+                if frame <= control_risk["through_frame"]:
+                    _include_motion_variants(estimate, variants)
                 if (
                     m.grounded
                     and not o.swimming
@@ -1057,7 +1167,10 @@ class Predictor:
                     first_cycle_risk = {
                         **control_risk,
                         "through_frame": frame,
-                        "possible_fall": control_risk["possible_fall"] or unsupported_descent,
+                        # Being above a gap during descent is uncertainty, not
+                        # a failed landing within this cycle. Keep it explicit;
+                        # the resolved flight still owns possible_fall below.
+                        "unsupported_descent": unsupported_descent,
                     }
                 if (step + 1) % 4 == 0 or step + 1 in (cycle, horizon):
                     trajectory.append(estimate)
@@ -1093,15 +1206,15 @@ class Predictor:
         followup = ()
         if self.selected_plan and self.history and self.history[-1] == o:
             plan = self.selected_plan
-            elapsed = o.frame + delay - plan["application_frame"]
+            elapsed = o.frame + delay - plan["apply_at_frame"]
             if (
-                o.frame >= plan["application_frame"]
+                o.frame >= plan["apply_at_frame"]
                 and cycle == plan["cycle"]
                 and elapsed >= cycle
                 and elapsed % cycle == 0
             ):
                 index = elapsed // cycle
-                scheduled_index = (o.frame - plan["application_frame"]) // cycle
+                scheduled_index = (o.frame - plan["apply_at_frame"]) // cycle
                 if not delay or (
                     scheduled_index < len(plan["actions"])
                     and scheduled_action == plan["actions"][scheduled_index]
@@ -1144,6 +1257,5 @@ class Predictor:
             "assumption": "Conditional sequences; only the first action is eligible for execution. "
             "Replan from real observations. No emulator trials or learned future labels.",
         }
-        result["risk_control"] = assess_risk(result, actions)
         result["compute_ms"] = round((perf_counter() - started) * 1000, 3)
         return result

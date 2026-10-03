@@ -1,6 +1,8 @@
 from dataclasses import replace
 from itertools import pairwise
 
+from prediction_helpers import assess_forecast
+
 from typesafe_mario.actions import Action
 from typesafe_mario.observation import Actor, Block, Observation
 
@@ -51,7 +53,7 @@ def test_candidates_are_observation_only_estimates_with_no_safety_promises():
 def test_committed_input_is_predicted_before_candidate_and_not_changeable():
     _, result = forecast(delay=8, scheduled_action=Action.RIGHT)
     assert result["committed_future"]["x"] > 80
-    assert result["application_frame"] == 8
+    assert result["apply_at_frame"] == 8
     assert all(f["first_cycle"]["frame"] == 16 for f in result["action_forecasts"])
 
 
@@ -152,14 +154,14 @@ def test_observed_jump_calibrates_impulse_but_collision_does_not_calibrate_accel
 
 def test_only_executed_candidate_is_validated_and_restart_drops_pending():
     p, r = forecast(actions=(Action.RIGHT, Action.LEFT))
-    p.expect(r, Action.RIGHT, application_frame=0)
+    p.expect(r, Action.RIGHT, apply_at_frame=0)
     for frame in range(1, 9):
         p.observe(floor_scene(frame=frame, x=80 + frame, previous_action="right"))
     assert p.validation()["samples"] == 1
     assert p.validation()["mean_absolute_x_error"] >= 0
     # An intervening different action invalidates the comparison.
     r = p.forecast(floor_scene(frame=8, x=88), (Action.RIGHT,), cycle=8)
-    p.expect(r, Action.RIGHT, application_frame=8)
+    p.expect(r, Action.RIGHT, apply_at_frame=8)
     for frame in range(9, 17):
         p.observe(floor_scene(frame=frame, x=80 + frame, previous_action="left"))
     assert p.validation()["samples"] == 1
@@ -563,7 +565,7 @@ def test_flush_ceiling_stop_does_not_train_gravity():
 
 def test_unreliable_motion_invalidates_pending_validation():
     p, r = forecast(actions=(Action.RIGHT,))
-    p.expect(r, Action.RIGHT, application_frame=0)
+    p.expect(r, Action.RIGHT, apply_at_frame=0)
     for frame in range(1, 9):
         p.observe(floor_scene(frame=frame, x=100 + frame, motion_reliable=frame != 1))
     assert p.validation()["samples"] == 0
@@ -696,7 +698,7 @@ def test_forecast_geometry_is_independent_of_world_number_and_absolute_x():
     )
     before = Predictor().forecast(a, tuple(Action), cycle=8)
     after = Predictor().forecast(b, tuple(Action), cycle=8)
-    assert before["risk_control"] == after["risk_control"]
+    assert assess_forecast(before) == assess_forecast(after)
     for left, right in zip(before["action_forecasts"], after["action_forecasts"], strict=True):
         assert left["control_risk"] == right["control_risk"]
         assert left["hazards"] == right["hazards"]
@@ -973,7 +975,7 @@ def test_quantized_held_ascent_does_not_force_aborting_a_gap_jump():
         p.observe(o)
     result = p.forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT_RUN_JUMP)
     assert abs(result["committed_future"]["y"] - 133) < 2
-    assert "right_run_jump" in result["risk_control"]["candidate_actions"]
+    assert "right_run_jump" in assess_forecast(result)["candidate_actions"]
 
 
 def test_short_low_speed_releases_do_not_inflate_friction_from_pixel_rounding():

@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 from typesafe_mario.actions import Action
 from typesafe_mario.dashboard import DashboardCommand
-from typesafe_mario.policy import Decision
+from typesafe_mario.policy import Decision, HeuristicPolicy
 from typesafe_mario.runner import _run_realtime_dashboard, run_episode
 from typesafe_mario.state import MarioStateParser
 
@@ -61,6 +61,7 @@ class DashboardRunnerTests(unittest.TestCase):
         self.env = FakeEnv()
         self.dashboard = Mock()
         self.policy = Mock()
+        self.policy.prepare.side_effect = HeuristicPolicy().prepare
         self.log = io.StringIO()
         self.requests = []
         self.frames_per_decision = 3
@@ -68,7 +69,8 @@ class DashboardRunnerTests(unittest.TestCase):
         executor_class = self.enterContext(patch("typesafe_mario.runner.ThreadPoolExecutor"))
         executor_class.return_value.__enter__.return_value.submit.side_effect = self.submit
 
-    def submit(self, choose, snapshot, actions):
+    def submit(self, resolve, prepared):
+        snapshot = prepared.snapshot
         future = Future()
         future.set_running_or_notify_cancel()
         self.requests.append((snapshot, future))
@@ -218,6 +220,32 @@ class DashboardRunnerTests(unittest.TestCase):
         decisions = [row for row in rows if row["record_type"] == "decision"]
         self.assertEqual([row["execution"]["start_frame"] for row in decisions], [0, 0])
         self.assertEqual([row["result_state"]["player"]["x"] for row in decisions], [156, 156])
+
+    def test_restart_keeps_old_request_and_gives_new_episode_distinct_identity(self):
+        from test_policy import Provider, policy
+
+        self.policy = policy(Provider())
+
+        def draw(frame, snapshot, active_decision, *, run_ended, **kwargs):
+            self.assertLess(self.dashboard.draw.call_count, 20)
+            if self.dashboard.draw.call_count == 1:
+                return DashboardCommand.RESTART
+            if self.dashboard.draw.call_count == 2:
+                rows = [json.loads(line) for line in self.log.getvalue().splitlines()]
+                requests = [r for r in rows if r["record_type"] == "policy_request"]
+                for (_, future), request in zip(self.requests, requests, strict=True):
+                    future.set_result(decision(Action(request["candidate_actions"][0])))
+            return DashboardCommand.QUIT if run_ended else DashboardCommand.CONTINUE
+
+        self.dashboard.draw.side_effect = draw
+        self.run_dashboard(max_decisions=1)
+        rows = [json.loads(line) for line in self.log.getvalue().splitlines()]
+        requests = [r for r in rows if r["record_type"] == "policy_request"]
+        decisions = [r for r in rows if r["record_type"] == "decision"]
+        self.assertEqual(len(requests), 2)
+        self.assertNotEqual(requests[0]["episode_id"], requests[1]["episode_id"])
+        self.assertNotEqual(requests[0]["request_id"], requests[1]["request_id"])
+        self.assertEqual([d["request_id"] for d in decisions], [requests[1]["request_id"]])
 
     def test_quit_while_waiting_does_not_advance(self):
         self.dashboard.draw.return_value = DashboardCommand.QUIT

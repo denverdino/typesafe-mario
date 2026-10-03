@@ -13,7 +13,7 @@ from .landing import landing_window
 from .shells import possible_ground_kick
 
 BEAM_WIDTH = 3
-MAX_CYCLES = 6
+MAX_SEARCH_FRAMES = 96
 STOMPABLE = frozenset({"goomba", "green_koopa", "red_koopa"})
 
 
@@ -79,7 +79,9 @@ def actor_contacts(previous, m, n, warnings, o, actor_paths, frame, dynamics):
                     n.stopped = True
             else:
                 n.failure, n.stopped = "nominal_contact", True
-        elif abs(m.x + 8 - (ex + 8)) < 24 and abs(m.y + o.height / 2 - (ey + 8)) < 24:
+        elif abs(m.x - ex) < 24 + (0 if known else min(32, 2 * frame)) and abs(
+            m.y + o.height / 2 - (ey + 8)
+        ) < 24 + (0 if known else min(32, 2 * frame)):
             warnings.add("close_contact")
             n.penalty += 0.6 if known else 1.2
     if possible_bounce is not None and not n.stopped:
@@ -119,7 +121,9 @@ def continuations(
     followup=(),
 ):
     """Retain a small, spatially diverse beam for each possible first action."""
-    horizon = min(horizon, cycle * (10 if runup or navigation_goal else MAX_CYCLES))
+    # Controller cadence changes opportunities to replan, not the amount of
+    # physical future needed to finish a jump. The caller supplies that budget.
+    horizon = min(horizon, MAX_SEARCH_FRAMES)
     if landing_horizon is not None:
         landing_horizon = min(landing_horizon, horizon + 2 * cycle)
     expansions = 0
@@ -208,18 +212,25 @@ def continuations(
                 # Later optional flights are replanned after fresh observations;
                 # applying an ever-growing envelope to them would forbid useful
                 # run-ups and climbs simply for being far in the search horizon.
-                if not motion.grounded and not n.landings and not any(
-                    32 <= b.top <= m.y + 1
-                    and b.left <= m.x + 8 - spread
-                    and m.x + 8 + spread < b.right
-                    for b in o.blocks
+                if (
+                    not motion.grounded
+                    and not n.landings
+                    and not any(
+                        32 <= b.top <= m.y + 1
+                        and b.left <= m.x + 8 - spread
+                        and m.x + 8 + spread < b.right
+                        for b in o.blocks
+                    )
                 ):
                     warnings.add("uncertain_landing")
                 landing = landing_window(
                     m, o, actor_paths, frame, n.elapsed, cycle, dynamics, n.removed_actors
                 )
                 n.landings += (landing,)
-                if any(e["contact_before_escape"] for e in landing["enemies"]):
+                if any(
+                    e["contact_before_escape"] or not e["reaction_window_complete"]
+                    for e in landing["enemies"]
+                ):
                     warnings.add("landing_contact_window")
             if o.known_x is None or m.x < o.known_x[0] or m.x + 16 > o.known_x[1]:
                 warnings.add("unobserved_terrain")
@@ -297,7 +308,7 @@ def continuations(
                 for acceleration in range(1, 4):
                     n = beam[0]
                     sequence = [Action.LEFT] * retreat + [Action.RIGHT_RUN] * acceleration
-                    for a in sequence + [Action.RIGHT_RUN_JUMP] * 10:
+                    for a in sequence + [Action.RIGHT_RUN_JUMP] * ((horizon + cycle - 1) // cycle):
                         if n.elapsed >= horizon or n.stopped:
                             break
                         n = extend(n, a)

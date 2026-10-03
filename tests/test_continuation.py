@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 import pytest
+from prediction_helpers import assess_forecast
 from test_observation_prediction import floor_scene
 
 from typesafe_mario.actions import Action
@@ -35,17 +36,15 @@ def test_search_does_not_discard_the_hold_needed_to_clear_a_high_visible_wall():
 
 
 def test_earlier_progress_is_preferred_to_postponing_the_same_jump_forever():
+    # A single obstacle keeps the two routes comparable: the multi-step scene
+    # can require an extra failed jump/retry for one first action.
     o = floor_scene(
         x=322,
         vx=0,
-        known_x=(288, 464),
+        known_x=(288, 544),
         blocks=(
-            Block(288, 464, 63, 79),
-            Block(304, 320, 79, 111),
-            Block(336, 352, 79, 127),
-            Block(368, 384, 79, 143),
-            Block(400, 416, 79, 143),
-            Block(432, 448, 79, 127),
+            Block(288, 544, 63, 79),
+            Block(336, 352, 79, 111),
         ),
     )
     r = Predictor().forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT)
@@ -75,7 +74,7 @@ def test_ceiling_sealed_platform_values_retreat_to_visible_lower_route(offset):
     assert left["end"]["y"] == 79
     assert left["status"] == "estimated_viable"
     assert left["score"] > plans["right_jump"]["score"]
-    assert "left" in r["risk_control"]["candidate_actions"]
+    assert "left" in assess_forecast(r)["candidate_actions"]
     below = replace(o, y=79)
     assert not paths(below).get("navigation_goal")
     # Open sky or no visible lower support cannot establish this detour.
@@ -174,7 +173,7 @@ def test_stomp_before_end_of_action_is_not_a_warning_free_refuge():
         actors=(Actor("g", "goomba", 100, 71),),
     )
     r = paths(o, (Action.NOOP, Action.RIGHT))
-    assert r["risk_control"]["candidate_actions"] != ["right"]
+    assert assess_forecast(r)["candidate_actions"] != ["right"]
 
 
 def test_continuation_can_finish_a_marginal_touch_on_top_of_narrow_column():
@@ -194,7 +193,7 @@ def test_continuation_can_finish_a_marginal_touch_on_top_of_narrow_column():
     forward = next(b for b in r["action_forecasts"] if b["action"] == "right_run_jump")
     assert forward["continuation"]["end"]["x"] > 360
     assert "marginal_landing" not in forward["continuation"]["warnings"]
-    assert "right_run_jump" in r["risk_control"]["candidate_actions"]
+    assert "right_run_jump" in assess_forecast(r)["candidate_actions"]
 
 
 def test_nominal_side_collision_and_possible_stomp_are_distinguished():

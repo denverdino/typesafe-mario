@@ -21,3 +21,12 @@ def predicted(snapshot, actions=tuple(Action), predictor=None):
         else None,
     )
     return replace(snapshot, prediction=result)
+
+
+def assess_forecast(prediction):
+    """Exercise arbitration separately from the predictor, for its forecasted actions."""
+    from typesafe_mario.risk import assess_risk
+
+    return assess_risk(
+        prediction, tuple(Action(b["action"]) for b in prediction["action_forecasts"])
+    )

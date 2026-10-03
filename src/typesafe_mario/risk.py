@@ -1,6 +1,6 @@
 """Conservative candidate eligibility from observation-only forecast warnings."""
 
-from .actions import Action
+from .actions import JUMP_ACTIONS, Action
 
 
 def assess_risk(prediction: dict | None, actions, *, state: dict | None = None) -> dict:
@@ -78,6 +78,28 @@ def assess_risk(prediction: dict | None, actions, *, state: dict | None = None) 
             reasons[name] = []
             if name not in lower_risk:
                 lower_risk.append(name)
+    if lower_risk and all(reasons[name] == ["possible_contact"] for name in lower_risk):
+        # A warning-only refuge cannot dominate a clear executable cycle solely
+        # because the alternative has an uncertain, replannable later landing.
+        # Keep that warning visible instead of claiming to discharge it.
+        comparable = []
+        for name, plan in plans.items():
+            prefix = branches[name].get("first_cycle_risk")
+            if (
+                reasons[name]
+                and set(reasons[name]) <= {"landing_contact_window", "uncertain_landing"}
+                and prefix
+                and not any(v is True for v in prefix.values())
+                and plan
+                and not plan["failure"]
+                and plan["evaluated_frames"] >= plan.get("horizon_frames", 48)
+                and set(plan["warnings"])
+                <= {"close_contact", "landing_contact_window", "uncertain_landing"}
+            ):
+                comparable.append(name)
+        if comparable:
+            lower_risk += comparable
+            report["basis"] = "comparable_continuation_uncertainty"
     if not lower_risk and all(plans.values()) and any(p["failure"] for p in plans.values()):
         # Repeating the first input forever can manufacture an avoidable risk.
         # Compare bounded, replannable continuations when they are available.
@@ -141,7 +163,7 @@ def assess_risk(prediction: dict | None, actions, *, state: dict | None = None) 
             )
             report["through_frame"] = max(
                 plans[n]["evaluated_frames"] for n in names
-            ) + prediction.get("application_frame", 0)
+            ) + prediction.get("action_delay_frames", 0)
     if not lower_risk and all(
         branches[name]["control_risk"].get("nominal_contact")
         and branches[name].get("contact_exposure")
@@ -185,6 +207,49 @@ def assess_risk(prediction: dict | None, actions, *, state: dict | None = None) 
             for n in comparable:
                 if n not in frontier:
                     reasons[n].append("dominated_contact_exposure")
+    committed = prediction.get("committed_future", {})
+    if (
+        lower_risk
+        and committed.get("grounded_estimate") is False
+        and committed.get("valid_for_application", True)
+        and not committed.get("conditional")
+    ):
+
+        def uncertain_landing_only(plan):
+            return bool(
+                plan
+                and plan["status"] == "uncertain"
+                and not plan["failure"]
+                and set(plan["warnings"]) <= {"uncertain_landing", "marginal_landing"}
+                and "uncertain_landing" in plan["warnings"]
+                and plan["evaluated_frames"] >= plan.get("horizon_frames", 48)
+                and plan.get("end", {}).get("grounded_estimate")
+            )
+
+        if all(uncertain_landing_only(plans[name]) for name in lower_risk):
+            # The short repeated-input window may label braking clear while
+            # its resolved landing is just as uncertain as continuing forward.
+            # Preserve that comparison without clearing any hazard warning.
+            comparable = [
+                name
+                for name in names
+                if name not in lower_risk
+                and set(reasons[name]) == {"uncertain_landing"}
+                and uncertain_landing_only(plans[name])
+                and branches[name].get("first_cycle_risk")
+                and not any(
+                    value is True and key != "uncertain_landing"
+                    for key, value in branches[name]["first_cycle_risk"].items()
+                )
+            ]
+            if comparable:
+                lower_risk += comparable
+                report["basis"] = "comparable_landing_uncertainty"
+                report["comparison_limit"] = (
+                    "All retained routes have uncertain landing support for the ongoing flight. "
+                    "A short clear braking window does not establish a safer landing. Compare "
+                    "the full landing routes; all existing warnings still apply."
+                )
     # Immediate clearance is not enough when another eligible input has a
     # complete warning-free continuation. Do not trade that margin for the
     # extra distance of a future close call or unresolved interaction.
@@ -213,11 +278,76 @@ def assess_risk(prediction: dict | None, actions, *, state: dict | None = None) 
             and b["top"] > y
             for b in state.get("terrain", {}).get("blocks", ())
         )
+        horizontal = recovery.get("horizontal_motion", {})
+        held_action = (
+            state.get("reaction_timing", {}).get("scheduled_action")
+            if prediction.get("action_delay_frames", 0)
+            else state.get("recent_control", {}).get("action")
+        )
+        if (
+            recovery.get("active")
+            and horizontal.get("frames", 0) >= 64
+            and not player.get("swimming")
+            and near_wall
+            and held_action in JUMP_ACTIONS
+            and committed.get("grounded_estimate") is False
+            and committed.get("vy", 0) > 0
+            and committed.get("valid_for_application", True)
+            and not committed.get("conditional")
+            and horizontal["x_range"][0] - 8
+            <= committed.get("x", x)
+            <= horizontal["x_range"][1] + 8
+        ):
+            # Releasing A can repeatedly cut a wall jump short. Only prune
+            # that release when an already eligible hold has a clear, complete
+            # route onto higher support beyond the observed horizontal loop.
+            holds = [
+                name
+                for name in lower_risk
+                if name in JUMP_ACTIONS
+                and complete_clear(plans[name])
+                and branches[name].get("first_cycle_risk")
+                and not any(v is True for v in branches[name]["first_cycle_risk"].values())
+                and branches[name]["first_cycle"]["y"] > committed["y"] + 4
+                and plans[name].get("end", {}).get("grounded_estimate")
+                and plans[name]["end"]["x"] > horizontal["x_range"][1] + 4
+                and any(
+                    landing["y"] > committed["y"] + 4 and landing["x"] > horizontal["x_range"][1]
+                    for landing in plans[name].get("landings", ())
+                )
+            ]
+            releases = (
+                [
+                    name
+                    for name in lower_risk
+                    if name not in JUMP_ACTIONS
+                    and complete_clear(plans[name])
+                    and plans[name].get("end", {}).get("grounded_estimate")
+                    and horizontal["x_range"][0] - 4
+                    <= plans[name]["end"]["x"]
+                    <= horizontal["x_range"][1] + 4
+                    and plans[name]["end"]["y"] < committed["y"]
+                    and branches[name]["first_cycle"]["y"]
+                    < min(branches[hold]["first_cycle"]["y"] for hold in holds) - 4
+                ]
+                if holds
+                else []
+            )
+            if releases:
+                reason = "interrupted_ascent_with_clear_landing"
+                for name in releases:
+                    reasons[name].append(reason)
+                lower_risk = [name for name in lower_risk if name not in releases]
+                report["recovery_filter"] = {
+                    "reason": reason,
+                    "horizontal_motion": horizontal,
+                    "clear_hold_actions": holds,
+                    "excluded_actions": releases,
+                }
         if (
             recovery.get("active")
             and local.get("frames", 0) >= 64
-            and sum(local.get("action_frames", {}).get(a, 0) for a in ("right", "right_run"))
-            >= 16
+            and sum(local.get("action_frames", {}).get(a, 0) for a in ("right", "right_run")) >= 16
             and player.get("grounded")
             and committed.get("grounded_estimate")
             and local["x_range"][0] - 8 <= committed.get("x", x) <= local["x_range"][1] + 8
@@ -250,21 +380,31 @@ def assess_risk(prediction: dict | None, actions, *, state: dict | None = None) 
                     "local_motion": local,
                     "excluded_actions": excluded,
                 }
-        wall = any(
+        right_wall = any(
             x + 12 <= b["left"] <= x + 18
             and b["bottom"] < y + player.get("height_pixels", 16)
             and b["top"] > y
             for b in state.get("terrain", {}).get("blocks", ())
         )
+        left_wall = any(
+            x - 2 <= b["right"] <= x + 4
+            and b["bottom"] < y + player.get("height_pixels", 16)
+            and b["top"] > y
+            for b in state.get("terrain", {}).get("blocks", ())
+        )
+        # Match the observed ineffective input to its wall. Future progress
+        # after changing buttons cannot justify repeatedly pushing either wall.
+        wall_input_frames = (
+            sum(stationary_inputs.get(a, 0) for a in ("right", "right_run")) if right_wall else 0
+        ) + (stationary_inputs.get("left", 0) if left_wall else 0)
         if (
             recovery.get("active")
             and recovery.get("stationary_frames", 0) >= 24
-            and sum(stationary_inputs.get(a, 0) for a in ("right", "right_run")) >= 16
+            and wall_input_frames >= 16
             and player.get("grounded")
             and committed.get("grounded_estimate")
             and abs(committed.get("x", x) - x) <= 2
             and abs(committed.get("y", y) - y) <= 2
-            and wall
         ):
             moving = [
                 name

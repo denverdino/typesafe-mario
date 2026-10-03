@@ -5,8 +5,10 @@ y upward with Mario's feet on the terrain support plane. No engine timers, hidde
 actors, exact RAM velocities, or native forecasts cross this boundary.
 """
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import TYPE_CHECKING
+
+from .timing import DecisionTiming
 
 if TYPE_CHECKING:
     from .state import MarioSnapshot
@@ -48,6 +50,44 @@ class Observation:
     score: int = 0
 
 
+@dataclass
+class VisibleActorTracker:
+    """Assign identities using only successive visible observations, not RAM lifetimes."""
+
+    epoch: int = 0
+    generation: int = 0
+    previous: Observation | None = None
+    identities: dict[str, str] = field(default_factory=dict)
+
+    def update(self, observation: Observation) -> dict[str, str]:
+        previous = self.previous
+        continuous = (
+            previous is not None
+            and previous.level == observation.level
+            and previous.frame + 1 == observation.frame
+            and previous.motion_reliable
+            and observation.motion_reliable
+            and not previous.terminal
+        )
+        old = {a.identity: a for a in previous.actors} if continuous else {}
+        identities = {}
+        for actor in observation.actors:
+            before = old.get(actor.identity)
+            if (
+                before is not None
+                and before.kind == actor.kind
+                and abs(before.x - actor.x) <= 16
+                and abs(before.y - actor.y) <= 16
+            ):
+                identity = self.identities[actor.identity]
+            else:
+                self.generation += 1
+                identity = f"{self.epoch}:{actor.identity}:{self.generation}"
+            identities[actor.identity] = identity
+        self.previous, self.identities = observation, identities
+        return dict(identities)
+
+
 def observe(snapshot: "MarioSnapshot") -> Observation:
     """Project existing telemetry onto current visible content only."""
     s = snapshot
@@ -79,8 +119,10 @@ def observe(snapshot: "MarioSnapshot") -> Observation:
         # been sampled while the actor was offscreen, or engine-phase fields.
         for track in s.enemy_tracks:
             m = track.measurement
-            if not track.observed or not (
-                viewport[0] < m.x + 16 and m.x < viewport[1] and 0 <= m.y < 240
+            if (
+                not track.observed
+                or m.y_high != 1
+                or not (viewport[0] < m.x + 16 and m.x < viewport[1] and 0 <= m.y < 240)
             ):
                 continue
             y = 255 - m.y
@@ -95,7 +137,8 @@ def observe(snapshot: "MarioSnapshot") -> Observation:
                     for x, z in ((m.x + 2, y + 2), (m.x + 14, y + 14))
                 ):
                     continue
-            actors.append(Actor(f"{m.slot}:{m.kind}", m.kind, m.x, y))
+            key = f"{m.slot}:{m.kind}"
+            actors.append(Actor(s.visible_actor_ids.get(key, key), m.kind, m.x, y))
     reliable = abs(s.dx) <= 16 and abs(s.dy) <= 16
     return Observation(
         s.frame_index,
@@ -120,10 +163,11 @@ def observe(snapshot: "MarioSnapshot") -> Observation:
 def model_state(snapshot: "MarioSnapshot") -> dict:
     """The provider gets this whitelist, never the raw debug snapshot."""
     o = observe(snapshot)
+    timing = DecisionTiming(o.frame, snapshot.frames_until_action, snapshot.decision_horizon_frames)
     recovery = snapshot.recovery
     state = {
         "objective": snapshot.goal,
-        "observation_frame": o.frame,
+        "observed_at_frame": o.frame,
         "level": dict(zip(("world", "stage", "area"), o.level, strict=True)),
         "player": {
             "x": o.x,
@@ -148,12 +192,12 @@ def model_state(snapshot: "MarioSnapshot") -> dict:
                 "stationary_frames",
                 "stationary_action_frames",
                 "local_motion",
+                "horizontal_motion",
             )
             if k in recovery
         },
         "reaction_timing": {
-            "frames_until_action": snapshot.frames_until_action,
-            "action_horizon_frames": snapshot.decision_horizon_frames,
+            **timing.to_state(),
             "total_reaction_horizon_frames": snapshot.frames_until_action
             + snapshot.decision_horizon_frames,
             "scheduled_action": snapshot.scheduled_action,

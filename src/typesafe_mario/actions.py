@@ -43,17 +43,11 @@ def first_frame_action(
 
 
 ACTION_DESCRIPTIONS: dict[Action, str] = {
-    Action.NOOP: "Release all controls; coast. Only for deliberate waiting, not a rising jump.",
-    Action.RIGHT: "Walk right for precision positioning; releases A and shortens a rising jump. "
-    "Do not use to continue an ascent that still needs height.",
-    Action.RIGHT_JUMP: "Continue holding A and right throughout a walking jump's ascent, "
-    "or jump onto a nearby obstacle from ground. Keeps necessary jump height.",
-    Action.RIGHT_RUN: "Default forward advance on clear supported ground: hold right and B. "
-    "Releases A; not for maintaining a rising jump or missing an urgent takeoff.",
-    Action.RIGHT_RUN_JUMP: "Continue holding a running jump during ascent, or take off now "
-    "to clear an enemy/gap at its takeoff window. Preserve forward speed and jump height.",
-    Action.JUMP: "Jump or hold A without direction when forward motion must be limited. "
-    "Existing horizontal momentum can continue.",
-    Action.LEFT: "Brake rightward momentum then move left, to reach a specific safe position. "
-    "Releases A; braking takes time and cannot instantly evade contact.",
+    Action.NOOP: "Release all buttons; existing momentum can continue.",
+    Action.RIGHT: "Hold RIGHT; release A and B.",
+    Action.RIGHT_JUMP: "Hold RIGHT and A; release B. Apply the boundary A-rearm rule.",
+    Action.RIGHT_RUN: "Hold RIGHT and B; release A.",
+    Action.RIGHT_RUN_JUMP: "Hold RIGHT, B and A. Apply the boundary A-rearm rule.",
+    Action.JUMP: "Hold A with no direction or B; momentum can continue. Apply the boundary A-rearm rule.",
+    Action.LEFT: "Hold LEFT; release A and B. Brake rightward momentum before moving left.",
 }

@@ -28,8 +28,65 @@ the same cycle semantics.
 ## Architecture
 
 ```text
-NES emulator -> telemetry/RAM parser -> structured JSON -> Jev Choice -> controller input
+NES emulator -> visible observation -> prediction evidence
+  -> tactical state + candidate arbitration -> captured request -> Jev Choice
+  -> fixed-frame controller input -> observed feedback
 ```
+
+`tactical.build_tactical_state()` owns provider-state projection and the single
+candidate-risk assessment, including recovery context. The predictor returns
+evidence without choosing eligible actions. `questions.build_questions()` builds
+the questions independently of the SDK. Policies expose `prepare()` and `resolve()`;
+`choose(snapshot, actions)` remains a convenience wrapper for direct callers.
+
+`DecisionRequest` freezes the exact `state` and `questions` arguments as JSON before
+dispatch, preserving candidate order. The SDK and logs receive independent copies
+of that captured payload. Preparation and serialization are outside API latency.
+
+Prediction version 49 and provider-state version 49 use `observed_at_frame` and
+`apply_at_frame` as absolute frames on the parser's observation clock. The delay is
+`action_delay_frames`, and execution duration is `action_cycle_frames`.
+Trajectory `frame`, contact-frame and risk `through_frame` values remain offsets
+from `observed_at_frame`, declared by `prediction.frame_reference`. In particular,
+the old prediction `application_frame` was a **delay**, not an absolute frame.
+Request preparation rejects mismatched forecast timing; execution checks the actual
+application frame and candidate membership before applying buttons. Checkpoint
+resume preserves the observation clock while log `execution.start_frame` restarts
+at zero; `execution.apply_at_frame` records the observation-clock value.
+
+State version 49 exposes one `action_assessments` entry per eligible action. Its
+`execution` describes the cycle that will actually run, `held_input` describes
+repeating the same input beyond that cycle, and `continuation` describes a proposed
+future sequence. Conditional stomps/bounces and continuation utility cannot clear
+an executable-cycle failure. `decision_context.comparison_status` distinguishes an
+invalid application state, all cycles predicting failure, insufficient evidence,
+and incomparable risks.
+Full `action_forecasts` remain local; references to them below describe diagnostics,
+not duplicate model-facing action evaluations.
+
+Prompt version 58 asks only `next_action` by default, using mechanical button
+descriptions and a short timing/risk contract. Add `--diagnostic-questions` to also
+request independent `jump_intent` and `danger` judgments. Missing diagnostics display
+as unavailable, not zero danger. Scene hints are included only when relevant.
+`next_action.instructions.game_rules` explicitly explains top-down Goomba stomps
+and bounces, Koopa shells, dangerous side contact, pits and head collisions. These
+rules describe possible interactions; forecasts must still establish feasibility.
+
+For an ongoing flight, an uncertain braking landing cannot be the sole lower-risk
+choice merely because its short repeated-input window is clear. Comparable complete
+forward routes with only landing uncertainty remain eligible, with all warnings
+retained. `unsupported_descent` describes being over a gap during the executable
+cycle separately from a predicted fall; the resolved flight still checks landing.
+After a grounded input reversal, `prediction.motion_sensitivity` propagates a
+heuristic ±1 px/frame initial-speed variation through the committed input and two
+control cycles. Divergent head/wall contacts retain `uncertain_wall_contact` and
+broaden position ranges. These bounds are sensitivity checks, not calibrated safety.
+Horizontal speed fitting preserves continuous input across takeoff, while rejecting
+landing, bounce and collision windows. The walking-flight cap is calibrated from
+steady visible airborne motion; accelerating and reversing windows cannot calibrate
+that cap. Pressing B in midair still cannot create a running takeoff.
+Same-frame upward clearance is resolved before a side-wall stop, so clearing a
+pipe or brick top does not erase horizontal momentum using the old frame's height.
 
 ### Observation-driven prediction
 
@@ -40,6 +97,25 @@ position minus screen position. Geometry covers the visible viewport, including
 space behind Mario for retreat; offscreen actors, exact RAM velocity, internal enemy states and plant
 countdowns are excluded from both prediction and the TypeSafe request. This remains
 telemetry-assisted perception, not a screenshot-only agent.
+
+Enemy X combines the RAM page and low byte (`$6E + slot`, `$87 + slot`);
+screen X subtracts the camera origin. Visible enemies must also have Y page 1
+(`$B6 + slot`) before interpreting the Y low byte (`$CF + slot`). Fish and
+Paratroopa variants have distinct type names. Visible actor identities restart
+after disappearance, missing telemetry, position discontinuities or parser reset,
+so a reused slot cannot inherit history across an observed gap. Slot reuse without
+an observable discontinuity remains indistinguishable. Internal state (`$1E + slot`),
+raw direction (`$46 + slot`) and activation flags remain diagnostic data only;
+direction and behavior meanings depend on the enemy type.
+
+The tactical state adds `actor_assessments`, joining visible actors to same-frame
+velocity estimates by identity. It reports actor-minus-Mario position (x rightward,
+y upward), observed movement directions and horizontal separation trends accounting
+for Mario's motion. Missing history or unmatched evidence gives `unknown`, rather
+than stationary. Zero measured displacement does not establish that an actor will
+remain still. These summaries describe the observation frame, not the delayed action
+boundary; approaching horizontally does not establish a collision, safe stomp,
+facing direction or attack intent.
 
 Prediction never receives the environment, reads a save state, calls `env.step`, or
 tries alternate timelines. `Predictor.observe()` learns from actual consecutive
@@ -206,8 +282,17 @@ If an eligible action moves forward or up immediately and has a complete warning
 continuation ending on support beyond the stalled position, choices that keep
 postponing that escape are excluded. A real run-up, jump, observation gap or warp
 breaks the local evidence; uncertain jumps do not qualify as escapes.
+`recovery.horizontal_motion` separately records a contiguous eight-pixel horizontal
+envelope without resetting on vertical motion. After 64 frames near a wall, a valid
+rising application state with A held can reveal a repeated interrupted jump. A-release
+choices that predict returning to the same horizontal envelope on lower support can
+be excluded only when an already eligible A-held action gains height this cycle and
+has a complete warning-free continuation landing higher and ending on support beyond
+the loop. Descending, swimming and uncertain routes do not trigger this check.
+`risk_control.recovery_filter` logs the evidence, retained hold alternatives and
+excluded inputs as `interrupted_ascent_with_clear_landing`; Jev still chooses the input.
 
-`prediction.risk_control` and log `selection` expose candidate eligibility and
+Provider-state `risk_control` and log `selection` expose candidate eligibility and
 exclusion reasons. Remaining candidates are not certified safe. Partial body overlap
 with a visible ceiling or wall is resolved conservatively instead of predicting
 motion through the solid tile. Unsupported descent warns before falling below the
@@ -258,7 +343,8 @@ executed or used as training labels. Predictor history starts fresh on restart/r
 
 The dashboard `Latency` and log `latency_ms` measure API-call duration only.
 `prediction.compute_ms` separately measures local forecast computation. Model-facing
-state is `observation.model_state`; fuller parser/RAM-derived diagnostics remain in
+state is prepared by `tactical.build_tactical_state()` from the
+`observation.model_state` whitelist; fuller parser/RAM-derived diagnostics remain in
 local debug logs and are not sent to the provider. There is no native predictor fallback.
 Provider requests include compact first-cycle estimates, risk warnings and
 continuations, plus recent actual motion segments, per-actor velocity/trajectory
@@ -296,8 +382,8 @@ export TYPESAFE_API_KEY="your-key"
 In each new terminal session, activate the virtual environment and export your API
 key again before running the commands below.
 
-Inspect the exact JSON and text that will be sent to TypeSafe without launching the
-game or calling the API:
+Inspect a sample parser/debug JSON and text view without launching the game or
+calling the API (actual provider payloads are captured in run logs):
 
 ```sh
 typesafe-mario state-demo
@@ -311,6 +397,26 @@ typesafe-mario play --env SuperMarioBros-1-1-v0 --frames-per-decision 8
 ```
 
 Use `--frames-per-decision 4` for a shorter prediction horizon, or `16` for a longer one.
+
+Measure opening physics without Jev, then reuse the measured parameters:
+
+```sh
+typesafe-mario calibrate --env SuperMarioBros-1-2-v0 --output artifacts/physics-1-2.json
+typesafe-mario play --env SuperMarioBros-1-2-v0 --frames-per-decision 8 \
+  --physics-profile artifacts/physics-1-2.json
+```
+
+Calibration executes predefined walk, coast, brake and jump probes in fresh real
+episodes. It stops a probe when visible space is insufficient or an actor approaches.
+It never saves/restores emulator state or tests alternative routes. The adjacent
+`.observations.json` contains the actual measurements. Fitting is a pure function;
+six additional probes compare default and calibrated eight-frame prediction errors,
+including input onsets, running takeoffs and air steering. Entry-animation frames
+are excluded from these validation scores.
+The profile lists parameters without enough evidence and retains their defaults.
+Loaded parameters stay fixed; gameplay continues learning the remaining parameters.
+Rerun calibration explicitly to replace a profile. Environment mismatches and invalid
+parameter values are rejected, and each play log records the profile hash and values.
 
 The dashboard shows the selected action, full Choice probability distribution,
 confidence, Jev latency, jump probability, danger score, reward, and parsed game
@@ -353,7 +459,43 @@ checkpoint, including ancestry when resuming a log that itself began at a checkp
 Use the same emulator/ROM version for reproducible replay. Without resume options,
 Restart continues to begin a fresh level as before.
 
-Log schema version 2 uses `record_type=decision` and `record_type=episode_end`.
+Log schema version 2 uses `record_type=policy_request`, `record_type=request_outcome`,
+`record_type=decision` and `record_type=episode_end`.
+Provider requests are flushed before worker dispatch with `status=prepared`, an
+episode-scoped `request_id`, timing, candidate actions, payload, versions and SHA-256.
+This records the SDK-bound arguments, not HTTP headers or credentials; a prepared
+record does not prove the server received it. SDK model defaults and transport
+metadata are outside this capture. Requests remain in the log if resolution fails,
+the episode ends, or Restart discards the response. A matching decision record links
+the request that was actually applied and stores its exact captured state. A prepared
+record alone does not establish execution, particularly after an abrupt process exit.
+Offline policies produce no provider request records. Existing schema-2 checkpoint logs remain replayable; replay ignores
+the additional request records.
+
+`request_outcome` records `received` when the runner consumes a response, `failed`
+with the exception type, `applied` after the first executed frame, or `discarded`
+with its reason and observed completion state. Discarding a still-running call does
+not prove cancellation or HTTP completion; its later result is not used. Records
+include UTC timestamps and episode-relative monotonic elapsed time. Provider model
+and request identifiers are captured only when the SDK response actually supplies
+them; otherwise the model is explicitly unresolved.
+
+Each decision includes `prediction_comparison` for the application position and
+the completed executable cycle, including x/y error and range coverage. A partial
+cycle is not compared against a full-cycle endpoint; an invalid committed state
+is not a valid application estimate. Landing forecasts and actual landing frames
+are recorded separately with their time references. Landing/recovery events retain
+a bounded 64-frame observation/button trace through the end of their cycle;
+`episode_end.recent_frames` retains the final 64 frames. These are actual observations,
+not counterfactual labels for unselected actions.
+
+`debug_state.prediction_details` stores the full forecast once; its duplicate in
+`debug_state.model_state` is omitted. Exact request and decision state are retained
+for schema-2 compatibility. Older snapshot hazard/trajectory estimates are explicitly
+labelled as diagnostics, not model input. `run_config.implementation` fingerprints
+package Python sources (including uncommitted edits) and records dependency versions.
+`predictor_initialization=cold_start` also applies to checkpoint retries: restoring
+the emulator/parser does not restore learned prediction history.
 Older control versions may include `decision_discarded` records for landing replans;
 fixed-frame runs do not discard responses merely because Mario lands.
 Each episode has a unique `episode_id`, including dashboard restarts. Decision records
@@ -365,9 +507,35 @@ even when no further response arrives. `run_config` records environment, seed, d
 action cadence, control mode, policy type, and prompt/state versions. Readers of the old
 format should filter decision records before reading action probabilities.
 
+### Offline run comparison
+
+```bash
+typesafe-mario analyze-log artifacts/run-20261003T115315.828217Z.jsonl
+typesafe-mario analyze-log artifacts/before.jsonl artifacts/after.jsonl --json
+```
+
+No emulator or Jev request is needed. The command reports each episode's result,
+furthest/final x, risk-filter counts, stalled decisions, unapplied requests and
+prediction comparisons. It can derive position comparisons from older logs too;
+an unfinished log is reported as incomplete, never as a death or a clear. Multiple
+runs remain separate, with their configuration attached, so different code versions,
+seeds or cold-start conditions are not silently pooled into one success rate.
+For interrupted logs, `frames` counts finalized decision records only; explicit
+application events without a finalized cycle appear in `unfinalized_applied_request_ids`.
+
+`tests/fixtures/world1-2-v46-failures.json` preserves the two recorded failures as
+compact actual-button sequences plus their final decision evidence. Regression tests
+reproduce all 250 endpoint positions and guard against treating a conditional stomp
+as clearance of first-cycle collision. They reproduce failures; they do not claim
+an improved clear rate. Evaluate prompting changes with repeated closed-loop runs
+at fixed environment, seed, cadence and implementation fingerprint.
+
 ## Model input and judgments
 
-`observation.model_state(snapshot)` is the canonical provider input:
+`observation.model_state(snapshot)` supplies the observation whitelist.
+`tactical.build_tactical_state(snapshot, actions)` adds the authoritative risk report
+and projects compact forecasts; `TypeSafePolicy.prepare()` captures that final state
+and its questions:
 
 - `player`: observed coordinates, pixel-difference velocity, current grounded/water
   state and motion reliability. World x increases rightward; y increases upward.
@@ -375,12 +543,14 @@ format should filter decision records before reading action probabilities.
 - `terrain`: visible block rectangles, known horizontal extent and visible pipe mouth.
 - `reaction_timing`: committed input, delay and next action duration.
 - `recovery`: observed stall duration and recent actual input counts.
-- `prediction`: approximate candidate motion, uncertainty, calibration and causal errors.
+- `prediction`: committed motion, actor forecasts, route cues and validation errors.
+- `action_assessments`: one interpretation of executable risk and conditional routes.
+- `decision_context`: allowed actions, comparison status and evidence priority.
 
-The provider returns three judgments: `next_action` chooses the actual controller
-macro; `jump_intent` and `danger` are diagnostics and never override the buttons.
-All supplied legal actions remain available, including jumps that may become possible
-after a predicted landing. Unknown geometry does not imply an empty or safe path.
+The provider's `next_action` chooses the actual controller macro from the eligible
+criteria. Optional `jump_intent` and `danger` are diagnostics and never override
+buttons. A single remaining candidate does not establish safety or well-calibrated
+model confidence. Unknown geometry does not imply an empty or safe path.
 
 The original detailed parser remains useful for the local dashboard and diagnostics.
 Its internal terrain heuristics and RAM-derived fields are not the model input.
@@ -389,6 +559,21 @@ causal learning, approximate motion, uncertainty and unmodified provider selecti
 Native execution fixtures still validate real button timing and manual checkpoint replay.
 
 ## Development
+
+For landing-reaction and planning-horizon changes, start with the pure observation
+regressions. These run without a game environment or provider calls:
+
+```sh
+python -m pytest -q tests/test_landing_paths.py tests/test_planning_horizon.py
+```
+
+Actor contact scanning and reaction-window padding live in `landing.py`;
+`continuation.py` owns the bounded physical planning horizon. Controller cadence
+does not shorten that horizon. New movement regressions should use visible
+geometry and actual observation history, including translated-coordinate cases.
+Candidate paths must be computed locally, never by branching emulator snapshots
+or trying alternative inputs against emulator memory. Full game runs remain a
+separate end-to-end acceptance check.
 
 ```sh
 ruff format --check src tests

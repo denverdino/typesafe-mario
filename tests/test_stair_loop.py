@@ -36,9 +36,9 @@ def test_small_back_and_forth_motion_preserves_evidence_of_a_local_loop():
 
 
 def recorded_cases():
-    return json.loads(
-        (Path(__file__).parent / "fixtures/world1-1-stair-loop.json").read_text()
-    )["cases"]
+    return json.loads((Path(__file__).parent / "fixtures/world1-1-stair-loop.json").read_text())[
+        "cases"
+    ]
 
 
 @pytest.mark.parametrize("case", recorded_cases(), ids=lambda c: str(c["frame"]))
@@ -81,9 +81,7 @@ def test_native_replay_climbs_out_of_the_recorded_loop():
     from typesafe_mario.state import MarioStateParser
 
     pytest.importorskip("gym_super_mario_bros")
-    data = json.loads(
-        (Path(__file__).parent / "fixtures/world1-1-stair-loop.json").read_text()
-    )
+    data = json.loads((Path(__file__).parent / "fixtures/world1-1-stair-loop.json").read_text())
     buttons = [Action(a) for a, count in data["buttons"] for _ in range(count)]
     env = create_mario_env(data["env_id"], render_mode="rgb_array")
     try:
@@ -91,6 +89,7 @@ def test_native_replay_climbs_out_of_the_recorded_loop():
         parser, predictor = MarioStateParser(), Predictor()
         snapshot = parser.parse(info, env.unwrapped.ram)
         predictor.observe(observe(snapshot))
+        upper_step_landings = []
 
         def step(action):
             nonlocal snapshot
@@ -100,6 +99,8 @@ def test_native_replay_climbs_out_of_the_recorded_loop():
             )
             predictor.observe(observe(snapshot))
             assert not terminated and not truncated and not snapshot.dead
+            if snapshot.x > 3004 and snapshot.y == 207 and snapshot.grounded:
+                upper_step_landings.append(snapshot.frame_index)
 
         for action in buttons[:2256]:
             step(action)
@@ -124,7 +125,15 @@ def test_native_replay_climbs_out_of_the_recorded_loop():
             for frame in range(8):
                 step(first if frame == 0 else action)
         assert snapshot.x > 3004
-        assert snapshot.y == 207
+        assert upper_step_landings
+        # A more progressive route may leave the upper step onto visible
+        # lower ground. Verify its bounded settling tail, not a fixed plan's
+        # endpoint height; an unresolved fall must still fail this test.
+        for _ in range(32):
+            if snapshot.grounded:
+                break
+            step(Action.NOOP)
         assert snapshot.grounded
+        assert snapshot.x > 3004 and snapshot.y >= 79
     finally:
         env.close()

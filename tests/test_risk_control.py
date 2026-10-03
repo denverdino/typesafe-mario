@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 import pytest
+from prediction_helpers import assess_forecast
 from test_observation_prediction import floor_scene
 from test_policy import Provider, policy
 
@@ -40,7 +41,7 @@ def prediction(o=None, actions=tuple(Action)):
 
 
 def test_brake_remains_available_before_ceiling_jump_lands_near_enemy():
-    report = prediction()["risk_control"]
+    report = assess_forecast(prediction())
     assert report["status"] == "filtered"
     assert report["candidate_actions"] == ["left"]
     assert "possible_contact" in report["excluded_actions"]["right_run_jump"]
@@ -48,23 +49,29 @@ def test_brake_remains_available_before_ceiling_jump_lands_near_enemy():
 
 def test_all_risky_keeps_choices_and_reports_no_lower_risk_option():
     o = replace(approach(), actors=(Actor("0:goomba", "goomba", 267, 79),))
-    report = prediction(o)["risk_control"]
+    report = assess_forecast(prediction(o))
     assert report["status"] == "no_lower_risk_option"
     assert set(report["candidate_actions"]) == {a.value for a in Action}
     assert not report["excluded_actions"]
 
 
 def test_missing_terrain_is_not_evidence_that_retreat_is_lower_risk():
-    report = prediction(replace(approach(), known_x=None, blocks=()))["risk_control"]
+    report = assess_forecast(prediction(replace(approach(), known_x=None, blocks=())))
     assert report["status"] == "no_lower_risk_option"
     assert set(report["candidate_actions"]) == {a.value for a in Action}
 
 
 def test_provider_receives_filtered_choices_and_its_answer_is_executed_unchanged():
     provider = Provider("left")
-    snapshot = replace(MarioStateParser().parse({}), prediction=prediction())
+    snapshot = replace(
+        MarioStateParser().parse({}),
+        prediction=prediction(),
+        frame_index=80,
+        frames_until_action=8,
+        scheduled_action="right_run_jump",
+    )
     decision = policy(provider).choose(snapshot, tuple(Action))
-    assert set(provider.request["questions"]["next_action"].criteria) == {"left"}
+    assert set(provider.request["questions"]["next_action"]["criteria"]) == {"left"}
     assert decision.action == Action.LEFT
     assert decision.selection["method"] == "observation_risk_filter"
     assert "right_run_jump" in decision.selection["excluded_actions"]
@@ -72,10 +79,16 @@ def test_provider_receives_filtered_choices_and_its_answer_is_executed_unchanged
 
 def test_disallowed_lower_risk_action_cannot_empty_the_provider_choices():
     provider = Provider("right_run_jump")
-    snapshot = replace(MarioStateParser().parse({}), prediction=prediction())
+    snapshot = replace(
+        MarioStateParser().parse({}),
+        prediction=prediction(),
+        frame_index=80,
+        frames_until_action=8,
+        scheduled_action="right_run_jump",
+    )
     decision = policy(provider).choose(snapshot, (Action.RIGHT_RUN_JUMP,))
     assert decision.action == Action.RIGHT_RUN_JUMP
-    assert set(provider.request["questions"]["next_action"].criteria) == {"right_run_jump"}
+    assert set(provider.request["questions"]["next_action"]["criteria"]) == {"right_run_jump"}
     assert decision.selection["status"] == "no_lower_risk_option"
 
 
@@ -101,7 +114,7 @@ def test_visible_landing_after_short_gap_does_not_filter_every_forward_action():
         blocks=(Block(0, 112, 95, 111), Block(128, 400, 63, 79), Block(0, 400, 135, 151)),
     )
     result = Predictor().forecast(o, tuple(Action), cycle=8)
-    assert "right" in result["risk_control"]["candidate_actions"]
+    assert "right" in assess_forecast(result)["candidate_actions"]
     branch = next(f for f in result["action_forecasts"] if f["action"] == "right")
     assert branch["end"]["grounded_estimate"]
     assert not branch["control_risk"]["possible_fall"]
@@ -123,8 +136,8 @@ def test_grounded_gap_approach_requires_support_for_position_uncertainty(offset)
     branches = {b["action"]: b for b in result["action_forecasts"]}
     assert branches["right"]["first_cycle"]["grounded_estimate"]
     assert branches["right"]["first_cycle_risk"]["uncertain_landing"]
-    assert "right" not in result["risk_control"]["candidate_actions"]
-    assert "left" in result["risk_control"]["candidate_actions"]
+    assert "right" not in assess_forecast(result)["candidate_actions"]
+    assert "left" in assess_forecast(result)["candidate_actions"]
     limited = assess_risk(result, (Action.RIGHT, Action.RIGHT_RUN))
     assert limited["status"] == "no_lower_risk_option"
     assert "uncertain_landing" in limited["warnings"]["right"]
@@ -159,8 +172,8 @@ def test_uncertain_contact_does_not_reenable_nominal_collision_when_retreat_is_b
     result = p.forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT)
     branches = {f["action"]: f for f in result["action_forecasts"]}
     assert all(f["control_risk"]["possible_contact"] for f in branches.values())
-    assert "left" in result["risk_control"]["candidate_actions"]
-    assert "right" not in result["risk_control"]["candidate_actions"]
+    assert "left" in assess_forecast(result)["candidate_actions"]
+    assert "right" not in assess_forecast(result)["candidate_actions"]
 
 
 def test_airborne_crossing_to_visible_support_is_not_an_unresolved_fall():
@@ -197,14 +210,14 @@ def test_risk_filter_does_not_cut_a_gap_jump_short_at_forecast_boundary():
         p.dynamics.add("gravity_fall", 0.62)
         p.dynamics.add("air_accel", 0.032)
     result = p.forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT_RUN_JUMP)
-    assert "right_run_jump" in result["risk_control"]["candidate_actions"]
-    assert "left" not in result["risk_control"]["candidate_actions"]
+    assert "right_run_jump" in assess_forecast(result)["candidate_actions"]
+    assert "left" not in assess_forecast(result)["candidate_actions"]
 
 
 def test_completed_flight_does_not_commit_optional_later_departure():
     o = floor_scene(x=80, y=100, vx=3, vy=-3, grounded=False, blocks=(Block(0, 144, 63, 79),))
     result = Predictor().forecast(o, (Action.RIGHT, Action.LEFT), cycle=8)
-    assert "right" in result["risk_control"]["candidate_actions"]
+    assert "right" in assess_forecast(result)["candidate_actions"]
     right = result["action_forecasts"][0]
     assert right["first_cycle"]["grounded_estimate"]
     assert not right["control_risk"]["possible_fall"]
@@ -230,7 +243,7 @@ def test_pipe_edge_touch_above_visible_floor_does_not_forbid_forward_jumps():
         p.dynamics.add("air_accel", 0.052)
         p.dynamics.add("jump_speed", 5.18)
     r = p.forecast(o, tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT_RUN)
-    assert "right_run_jump" in r["risk_control"]["candidate_actions"]
+    assert "right_run_jump" in assess_forecast(r)["candidate_actions"]
 
 
 def test_jump_rearming_frame_does_not_end_the_flight_before_takeoff():
@@ -295,7 +308,7 @@ def test_optional_risky_followup_cannot_disqualify_a_clear_waiting_refuge():
         actors=(Actor("g", "goomba", 200, 71),),
     )
     result = Predictor().forecast(o, tuple(Action), cycle=8)
-    assert "noop" in result["risk_control"]["candidate_actions"]
+    assert "noop" in assess_forecast(result)["candidate_actions"]
     plan = next(b["continuation"] for b in result["action_forecasts"] if b["action"] == "noop")
     assert not plan["warnings"]
 
@@ -305,7 +318,7 @@ def test_unresolved_final_flight_cannot_hide_a_complete_waiting_refuge():
         x=80, vx=0, previous_action="noop", known_x=(0, 400), blocks=(Block(0, 160, 63, 79),)
     )
     result = Predictor().forecast(o, tuple(Action), cycle=8)
-    assert "noop" in result["risk_control"]["candidate_actions"]
+    assert "noop" in assess_forecast(result)["candidate_actions"]
     plan = next(b["continuation"] for b in result["action_forecasts"] if b["action"] == "noop")
     assert not plan["warnings"]
 
@@ -337,7 +350,7 @@ def test_safe_first_cycle_and_complete_changed_inputs_can_avoid_repeated_jump_fa
     r = Predictor().forecast(
         stalled_step_scene(), tuple(Action), cycle=8, delay=8, scheduled_action=Action.RIGHT
     )
-    assert "right_jump" in r["risk_control"]["candidate_actions"]
+    assert "right_jump" in assess_forecast(r)["candidate_actions"]
     jump = next(b for b in r["action_forecasts"] if b["action"] == "right_jump")
     assert jump["control_risk"]["possible_fall"]
     assert not jump["first_cycle_risk"]["possible_fall"]
@@ -393,7 +406,7 @@ def test_later_centered_landing_does_not_erase_immediate_edge_uncertainty():
     )
     result = Predictor().forecast(o, (Action.RIGHT, Action.NOOP), cycle=8)
     assert all(b["first_cycle_risk"]["uncertain_landing"] for b in result["action_forecasts"])
-    report = result["risk_control"]
+    report = assess_forecast(result)
     assert report["status"] == "no_lower_risk_option"
     assert all("uncertain_landing" in w for w in report["warnings"].values())
 
@@ -411,7 +424,7 @@ def test_all_contact_options_prefer_reducing_exposure_over_running_into_plant():
     result = Predictor().forecast(o, tuple(Action), cycle=8)
     branches = {b["action"]: b for b in result["action_forecasts"]}
     assert all(b["first_cycle_risk"]["nominal_contact"] for b in branches.values())
-    report = result["risk_control"]
+    report = assess_forecast(result)
     assert report["basis"] == "contact_exposure_dominance"
     assert "right_run" not in report["candidate_actions"]
     assert "jump" in report["candidate_actions"]

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+from prediction_helpers import assess_forecast
 
 from typesafe_mario.actions import Action
 from typesafe_mario.dynamics import Dynamics
@@ -55,7 +56,7 @@ def test_directional_jump_past_brick_edge_remains_available(case_name):
         scheduled_action=Action(case["timing"]["scheduled_action"]),
     )
     # Both native counterfactuals cross the enemy pair onto the next block.
-    assert "right_run_jump" in r["risk_control"]["candidate_actions"]
+    assert "right_run_jump" in assess_forecast(r)["candidate_actions"]
 
 
 def test_gap_refuge_cannot_discharge_edge_uncertainty_with_a_nominal_landing():
@@ -64,8 +65,8 @@ def test_gap_refuge_cannot_discharge_edge_uncertainty_with_a_nominal_landing():
     # The original NOOP->LEFT plan nominally lands only four pixels inside
     # support. Native replay overshoots it and falls; immediate LEFT returns
     # to the near bank. A nominal continuation must not erase that margin.
-    assert "left" in r["risk_control"]["candidate_actions"]
-    assert "noop" not in r["risk_control"]["candidate_actions"]
+    assert "left" in assess_forecast(r)["candidate_actions"]
+    assert "noop" not in assess_forecast(r)["candidate_actions"]
     noop = next(b for b in r["action_forecasts"] if b["action"] == "noop")
     assert "uncertain_landing" in noop["continuation"]["warnings"]
-    assert "uncertain_landing" in r["risk_control"]["excluded_actions"]["noop"]
+    assert "uncertain_landing" in assess_forecast(r)["excluded_actions"]["noop"]

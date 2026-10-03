@@ -1,0 +1,166 @@
+{
+  "source": "run-20261003T162013.646374Z.jsonl",
+  "source_sha256": "0ef634ecbee46a49734d5a35a063a29afdcc8d4591d31aa48cbc9f81760aa700",
+  "decision": 300,
+  "state": {
+    "observed_at_frame": 2392,
+    "level": {
+      "world": 1,
+      "stage": 1,
+      "area": 1
+    },
+    "player": {
+      "x": 2206,
+      "y": 79,
+      "center_x": 2214,
+      "horizontal_speed_px_per_frame": 0,
+      "vertical_speed_px_per_frame": 0,
+      "grounded": true,
+      "swimming": false,
+      "height_pixels": 16,
+      "motion_reliable": true
+    },
+    "terrain": {
+      "known_x": [
+        2124,
+        2380
+      ],
+      "blocks": [
+        {
+          "left": 2192,
+          "right": 2208,
+          "bottom": 127,
+          "top": 143
+        },
+        {
+          "left": 2240,
+          "right": 2256,
+          "bottom": 127,
+          "top": 143
+        },
+        {
+          "left": 2176,
+          "right": 2208,
+          "bottom": 111,
+          "top": 127
+        },
+        {
+          "left": 2240,
+          "right": 2272,
+          "bottom": 111,
+          "top": 127
+        },
+        {
+          "left": 2160,
+          "right": 2208,
+          "bottom": 95,
+          "top": 111
+        },
+        {
+          "left": 2240,
+          "right": 2288,
+          "bottom": 95,
+          "top": 111
+        },
+        {
+          "left": 2144,
+          "right": 2208,
+          "bottom": 79,
+          "top": 95
+        },
+        {
+          "left": 2240,
+          "right": 2304,
+          "bottom": 79,
+          "top": 95
+        },
+        {
+          "left": 2368,
+          "right": 2380,
+          "bottom": 79,
+          "top": 95
+        },
+        {
+          "left": 2124,
+          "right": 2380,
+          "bottom": 63,
+          "top": 79
+        },
+        {
+          "left": 2124,
+          "right": 2380,
+          "bottom": 47,
+          "top": 63
+        }
+      ]
+    },
+    "recovery": {
+      "active": true,
+      "no_progress_frames": 479,
+      "anchor_x": 2226,
+      "action_frames": {
+        "left": 96
+      },
+      "stationary_frames": 95,
+      "stationary_action_frames": {
+        "left": 95
+      },
+      "local_motion": {
+        "frames": 95,
+        "x_range": [
+          2206,
+          2206
+        ],
+        "y_range": [
+          79,
+          79
+        ],
+        "action_frames": {
+          "left": 95
+        }
+      },
+      "horizontal_motion": {
+        "frames": 95,
+        "x_range": [
+          2206,
+          2206
+        ],
+        "y_range": [
+          79,
+          79
+        ],
+        "action_frames": {
+          "left": 95
+        }
+      }
+    },
+    "reaction_timing": {
+      "observed_at_frame": 2392,
+      "action_delay_frames": 8,
+      "action_cycle_frames": 8,
+      "apply_at_frame": 2400,
+      "total_reaction_horizon_frames": 16,
+      "scheduled_action": "left",
+      "scheduled_first_frame_action": "left"
+    },
+    "recent_control": {
+      "action": "left"
+    }
+  },
+  "parameters": {
+    "walk_accel": 0.18,
+    "run_accel": 0.131,
+    "brake_accel": 0.216,
+    "air_accel": 0.093,
+    "air_walk_speed": 1.719,
+    "friction": 0.068,
+    "gravity_hold": 0.185,
+    "gravity_hold_fast": 0.205,
+    "gravity_fall": 0.486,
+    "jump_speed": 5.0,
+    "jump_speed_fast": 5.929,
+    "stomp_speed": 4.0,
+    "swim_gravity": 0.12,
+    "swim_impulse": 2.5
+  }
+}

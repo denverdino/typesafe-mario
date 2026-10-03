@@ -51,7 +51,7 @@ def test_snapshot_restores_emulator_parser_reward_and_time_limit(env):
     assert again == expected
 
 
-def recorded_log(env, path):
+def recorded_log(env, path, *, with_requests=False):
     _, info = env.reset(seed=123)
     parser = MarioStateParser()
     s = parser.parse(info, _unwrap_ram(env))
@@ -66,7 +66,16 @@ def recorded_log(env, path):
             },
         )
         for i, a in enumerate((Action.RIGHT_RUN, Action.RIGHT_RUN_JUMP, Action.RIGHT_JUMP)):
-            recorder.begin(i, replace(s, frames_until_action=8), Decision(a, 1, {}, 0), s, 8)
+            prepared = None
+            observed = replace(s, frames_until_action=8)
+            if with_requests:
+                from typesafe_mario.policy import TypeSafePolicy
+
+                # Request preparation needs neither credentials nor a network client.
+                observed = replace(s, frames_until_action=0)
+                prepared = TypeSafePolicy.__new__(TypeSafePolicy).prepare(observed, (a,))
+                recorder.record_request(i, prepared)
+            recorder.begin(i, observed, Decision(a, 1, {}, 0), s, 8, prepared)
             for frame in range(8):
                 _, reward, t, tr, s, actual = _advance_frame(
                     env, parser, s, a, new_decision=frame == 0, delay_frames=8
@@ -88,6 +97,20 @@ def test_log_replay_recovers_frame_history_without_provider_calls(env, tmp_path)
     assert vars(restored_parser) == vars(parser)
     assert cp.provenance["before_decision"] == 3
     assert cp.provenance["replayed_frames"] == 24
+
+
+def test_checkpoint_replay_accepts_additional_captured_request_records(env, tmp_path):
+    path = tmp_path / "requests.jsonl"
+    expected, parser, ram = recorded_log(env, path, with_requests=True)
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    assert len([r for r in rows if r["record_type"] == "policy_request"]) == 3
+    cp = checkpoint_from_log(
+        env, path, decision=3, env_id="SuperMarioBros-1-2-v0", frames_per_decision=8
+    )
+    _, restored_parser, actual = cp.restore(env)
+    assert actual.to_debug_state() == expected.to_debug_state()
+    assert bytes(_unwrap_ram(env)) == ram
+    assert vars(restored_parser) == vars(parser)
 
 
 def test_replay_rejects_wrong_environment_horizon_ambiguous_episode_and_drift(env, tmp_path):

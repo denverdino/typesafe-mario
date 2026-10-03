@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+from prediction_helpers import assess_forecast
+
 from typesafe_mario.actions import Action
 from typesafe_mario.dynamics import Dynamics
 from typesafe_mario.observation import Actor, Block, Observation
@@ -38,10 +40,12 @@ def test_late_repeated_jump_landing_cannot_force_wait_over_a_clear_current_jump(
     p, o, timing = recorded_case("episode2_frame912")
     r = p.forecast(o, tuple(Action), **timing)
     jump = next(b for b in r["action_forecasts"] if b["action"] == "jump")
-    assert jump["continuation"]["status"] == "estimated_viable"
+    assert jump["continuation"]["failure"] is None
     assert not any(v is True for v in jump["first_cycle_risk"].values())
-    assert "jump" in r["risk_control"]["candidate_actions"]
-    assert "landing_contact_window" in r["risk_control"]["repeated_input_warnings"]["jump"]
+    assert "jump" in assess_forecast(r)["candidate_actions"]
+    # A late uncertain landing is not cleared; it remains comparable to a
+    # waiting action that itself already has possible-contact warnings.
+    assert "landing_contact_window" in assess_forecast(r)["warnings"]["jump"]
 
 
 def test_jump_at_predicted_landing_boundary_is_not_a_guaranteed_takeoff():
@@ -52,7 +56,7 @@ def test_jump_at_predicted_landing_boundary_is_not_a_guaranteed_takeoff():
     assert r["committed_future"]["grounded_estimate"]
     assert jump["first_cycle_risk"]["uncertain_takeoff"]
     assert "uncertain_takeoff" in jump["continuation"]["warnings"]
-    assert r["risk_control"]["status"] != "unrestricted"
+    assert assess_forecast(r)["status"] != "unrestricted"
 
 
 def test_observed_enemy_turn_does_not_average_away_its_current_direction():
@@ -136,15 +140,24 @@ def test_provider_receives_takeoff_uncertainty_and_keeps_its_selected_action():
 
     p, o, timing = recorded_case("episode1_frame240")
     r = p.forecast(o, tuple(Action), **timing)
-    chosen = r["risk_control"]["candidate_actions"][0]
+    chosen = assess_forecast(r)["candidate_actions"][0]
     provider = Provider(chosen)
     decision = policy(provider).choose(
-        replace(MarioStateParser().parse({}), prediction=r), tuple(Action)
+        replace(
+            MarioStateParser().parse({}),
+            prediction=r,
+            frame_index=r["observed_at_frame"],
+            frames_until_action=r["action_delay_frames"],
+            decision_horizon_frames=r["action_cycle_frames"],
+        ),
+        tuple(Action),
     )
     sent = provider.request["state"]["prediction"]
     assert sent["committed_future"]["landing_timing"]["uncertain_takeoff"]
-    jump = next(b for b in sent["action_forecasts"] if b["action"] == "right_run_jump")
-    assert jump["first_cycle_risk"]["uncertain_takeoff"]
+    state = provider.request["state"]
+    assert "uncertain_takeoff" in state["risk_control"]["excluded_actions"]["right_run_jump"]
+    assert "right_run_jump" not in {b["action"] for b in state["action_assessments"]}
+    jump = next(b for b in r["action_forecasts"] if b["action"] == "right_run_jump")
     assert "uncertain_takeoff" in jump["continuation"]["warnings"]
     assert decision.action.value == chosen
 

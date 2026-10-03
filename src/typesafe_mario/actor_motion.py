@@ -5,7 +5,9 @@ from .observation import Actor, Observation
 WALKERS = {"goomba", "green_koopa", "red_koopa"}
 
 
-def actor_path(actor: Actor, velocity: tuple, o: Observation, frames: int) -> list[tuple]:
+def actor_path(
+    actor: Actor, velocity: tuple, o: Observation, frames: int, *, gravity: float = 0.25
+) -> list[tuple]:
     vx, vy, known = velocity
     x, y = actor.x, actor.y
     path = [(x, y, known)]
@@ -33,7 +35,11 @@ def actor_path(actor: Actor, velocity: tuple, o: Observation, frames: int) -> li
             else:
                 # No engine phase or spawn state: walking enemies accelerate
                 # downward when they leave visible support, instead of hovering.
-                vy = max(-5.0, vy - 0.5)
+                # A measured level velocity does not establish the phase or
+                # acceleration of this fall. Preserve that uncertainty even
+                # after a nominal landing until a new observation confirms it.
+                known = False
+                vy = max(-5.0, vy - gravity)
             ny = y + vy
             for b in o.blocks:
                 if b.left <= nx + 8 < b.right and feet >= b.top and ny + 8 <= b.top:
