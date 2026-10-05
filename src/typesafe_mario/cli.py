@@ -65,7 +65,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--frames-per-decision",
         type=int,
         default=8,
-        help="Minimum macro duration in emulator frames",
+        help="Frames per action cycle; pause at the boundary until inference completes",
     )
     play.add_argument("--max-decisions", type=int, default=2000)
     play.add_argument("--seed", type=int, default=123)

@@ -58,11 +58,17 @@ class TypeSafePolicy:
                 instructions={
                     "question": "Which controller macro should Mario commit to next?",
                     "goal": "Advance toward the stage flag while avoiding death.",
-                    "timing": "The selected action is held for at least 8 emulator frames.",
+                    "timing": (
+                        f"The selected macro runs for {snapshot.decision_horizon_frames} emulator "
+                        "frames in the next cycle. Simulation pauses at cycle boundaries until "
+                        "inference completes; waiting does not advance game time."
+                    ),
                     "geometry": (
                         "Use `terrain.observation_reliability`. While airborne, prefer "
                         "`terrain.last_grounded_preview` over low-reliability current geometry. "
-                        "A trusted obstacle or gap within three tiles requires a forward jump."
+                        "A trusted obstacle or gap within three tiles requires a forward jump. "
+                        "Judge historical gap proximity from its world coordinates and current "
+                        "`player.x`, not its old tile distance."
                     ),
                     "trajectory": (
                         "Use `trajectory`. If `crossing_known_gap` is true, preserve forward "
@@ -74,19 +80,25 @@ class TypeSafePolicy:
                         "`recent_control.outcome` is blocked, the current non-jump action failed."
                     ),
                     "enemy_timing": (
-                        "Use `hazard` projections, not distance alone. Code has already accounted "
-                        "for inference delay, action cadence, and the frames needed to clear an "
-                        "enemy. If `jump_must_start_this_decision` is true, choose a forward jump "
-                        "now; another right-run decision will miss the takeoff deadline. If "
-                        "`contact_within_reaction_horizon` is true, also jump immediately. If "
-                        "`will_land_before_contact` is true, the current jump will not clear the "
-                        "enemy and another takeoff will be needed after landing. Use "
+                        "Use `hazard` projections, not distance alone. Contact estimates assume "
+                        "unchanged horizontal velocities; they do not simulate acceleration or "
+                        "committed controls, and describe horizontal overlap, not confirmed "
+                        "collision. The 8-frame clearance allowance and urgency flags are "
+                        "heuristics, including when referenced by action criteria. Judge jump "
+                        "timing using vertical geometry and `committed_control`. "
+                        "A false urgency flag or unknown landing estimate does not establish "
+                        "safety. "
+                        "`will_land_before_contact` compares estimates; it does not establish "
+                        "whether the enemy will be cleared. Use "
                         "`upcoming_enemies` and their spacing to avoid landing on a second or "
                         "third enemy hidden behind the nearest one."
                     ),
                     "delay": (
-                        "`reaction_timing` describes how far the world moves before this choice "
-                        "takes effect. Judge urgency from projected rather than current distance."
+                        "The selected macro starts after "
+                        "`committed_control.frames_before_selected_action`. Distance projections "
+                        "use the total reaction horizon, including the selected macro's duration. "
+                        "A first-landing estimate does not guarantee Mario can still jump when "
+                        "the selected macro starts."
                     ),
                 },
                 criteria=criteria,
@@ -95,9 +107,10 @@ class TypeSafePolicy:
                 instructions=(
                     "Do trusted `terrain`, projected `hazard`, `trajectory`, and "
                     "`player.jump_phase` indicate that a forward jump should begin or remain "
-                    "held now? `hazard.jump_must_start_this_decision=true` is unambiguously yes. "
-                    "Also count a trusted obstacle/gap within three tiles, immediate projected "
-                    "contact, or a rising jump over a known gap as yes."
+                    "held during the next action cycle? Treat hazard urgency flags as heuristic "
+                    "evidence, checking collision risk and takeoff conditions under committed "
+                    "controls. Also count a trusted obstacle/gap within three tiles, immediate "
+                    "collision risk, or a rising jump over a known gap as yes."
                 )
             ),
             "danger": self._Score(
