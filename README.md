@@ -6,7 +6,7 @@ controller inputs for the original Super Mario Bros.
 The model does **not** receive screenshots. The harness translates emulator telemetry
 and RAM into compact, object-centric JSON containing Mario's motion, jump trajectory,
 upcoming enemies, terrain, measured response delay, recent-control results, and episode
-progress. Jev chooses one of the legal controller actions, the emulator advances several
+progress, visible scoring opportunities and confirmed scoring events. Jev chooses one of the legal controller actions, the emulator advances several
 frames, and the loop repeats. The raw local tile grid remains available in debug logs
 and the UI, but is not duplicated in the model input.
 
@@ -79,7 +79,9 @@ again on landing, including landings inside a cycle. Button releases consume the
 same frame budget. This prepares a new jump; it does not guarantee takeoff if Mario
 has already left the edge before the game processes the press.
 
-The dashboard shows the selected action, full Choice probability distribution,
+The dashboard shows game score, the current coin counter, confirmed collected coins
+and confirmed stomps separately from environment reward. Confirmed counts are lower
+bounds; unknown values display an em dash. It also shows the selected action, full Choice probability distribution,
 confidence, Jev latency, jump probability, danger score, reward, and parsed game
 state. Press `R` or click **Restart** for a fresh episode; the dashboard remains open
 after death or level completion. Press `Esc` or `Q` to quit. Use `--display game` for
@@ -113,6 +115,85 @@ The model-facing object groups observations by meaning:
 - `recent_control`: chosen action, duration, progress gained, and observed outcome
 - `committed_control`: already committed macro, first frame action, and next-choice delay
 - `episode`: lives, clock, progress, stalls, death, and level completion
+- `scoring`: score, coin counter, previous-frame score delta, confirmed collection/stomp
+  totals, unattributed score gain and constraints on extra effort for scoring
+- `opportunities`: up to eight currently observed coins, reward blocks, mushroom/
+  fire-flower items or suitable walking Goomba/green Koopa targets, with positions, state, source and
+  observation frame; blocks in Mario's current column remain observable
+
+## Best-effort scoring
+
+Jev prioritizes survival and reaching the flag, then actively tries to collect visible
+coins, hit reachable reward blocks from below, obtain mushroom/fire-flower upgrades
+and stomp suitable enemies along the way.
+It may slow down or adjust a jump,
+but must not backtrack for missed rewards, wait to farm enemies or jeopardize a gap
+crossing. LEFT remains available for evasion and recovery. Hidden rewards, shell
+kicking, chain-stomp optimization and side routes are outside this first version.
+The observation layer distinguishes visible coin question blocks (`0xc0`) and
+multi-coin bricks (`0x58` / `0x5d`) from loose coins. These are `coin_block` targets
+with `block_kind`, `required_interaction: hit_from_below` and tile bounds. Mushroom/
+flower question blocks (`0xc1`) are separate `powerup_block` targets. Their
+`expected_powerup_if_hit_now` is a mushroom while small, a fire flower while big
+or fiery, and null for an unknown status. Actual contents depend on status at the
+hit. Empty/hidden blocks, stars, 1-ups and other special bricks are excluded.
+This describes current RAM
+contents, not a guaranteed reachable jump or a remaining coin count.
+
+For a reward block, `head_bump_geometry` supplies the current background-collision
+head probe, the block's horizontal interval relative to that probe, the upward
+distance to its underside (positive when the head is below it), and whether a
+block bounce is active. The interval is half-open: it contains zero when aligned.
+Small/crouching and standing big Mario use different head offsets; unsupported
+swimming geometry is null. These are observations, not predicted contact times.
+Jev accounts for momentum and committed controls, approaches at controlled speed,
+and chooses a forward jump or a jump without directional input to hit from below.
+After a hit it reassesses the target; additional multi-coin hits must fit the same
+safety, time and progress constraints. The executor does not force a jump or
+select the target. No new action macro is introduced.
+
+After a power-up block is hit, slot 5 supplies an actual `powerup` touch target,
+separate from hostile enemies. `powerup_kind` identifies mushroom/fire_flower;
+`emergence_phase` distinguishes emerging from active. During early emergence the
+collision box is null because the game has not refreshed it yet. Mushroom motion
+includes falling off a block; flowers stay still. Mario's screen collision box is
+also provided for Jev to judge contact. Emerging does not mean collected.
+Jev plans the hit and pickup together, controlling momentum before the hit and
+using safe positioning jumps/brief slowdowns to avoid passing the item. It resumes
+forward progress when the item is lost or the existing pursuit budget expires.
+Already fiery Mario only collects further flowers incidentally. This adds no
+auto-pickup or forced action, and does not permit backtracking for missed items.
+
+When remaining game time is 100 or less (or unknown), or 48 emulator frames have
+passed without improving best horizontal progress, `scoring.pursuit.allow_extra_effort`
+becomes false. These are policy parameters, not physical safety guarantees. Incidental
+scoring while advancing is still allowed; the executor never replaces Jev's choice
+based on these fields, jump probability or danger score.
+
+Opportunity relative Y is positive downward; player vertical speed remains positive
+upward. Screen collision boxes are distinct from world X positions. A coin's tile
+origin is not a collision box. Block `tile_bounds_screen_xyxy` are half-open screen
+rectangles, distinct from object collision boxes. A block may have a slightly
+negative relative X while Mario overlaps its column. A stompable enemy type does not predict successful
+contact or a safe landing. Unavailable observations and truncated candidate lists
+do not establish safety. Counters, disappearing objects and score changes are not
+interchangeable evidence; see [scoring evidence](tests/fixtures/scoring-observations.md).
+
+Trace schema v2 adds confirmed coin/stomp/injury events, score changes and an
+`episode_end.summary`. Decision records add `scoring_result` over
+`(start_frame, end_frame]`, without changing the original request snapshot.
+The initial NOOP cycle contributes only to the episode total.
+`score_before_clear` is the immediately preceding observation's score and
+`score_at_clear` is the first clear frame's score. Neither is the score after
+the ending animation, because execution stops at clear. Missing score pairs yield
+unknown gains; coverage counts are included. Score-source attribution remains
+unknown without unique evidence, even when a collection and score change coincide.
+Budget termination is not a successful clear.
+
+Validate strategy changes with complete autonomous episodes using the same environment,
+seeds and budget for baseline and candidate. Compare completion/death first, then
+pre-clear score and confirmed coins/stomps, reporting failures and observation gaps.
+Unit tests and a single high-score run do not demonstrate strategy improvement.
 
 Terrain checks the complete RAM block-buffer columns below a missing surface to
 distinguish a lower landing (`drop_*`) from a pit. With incomplete RAM, a gap remains

@@ -5,12 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import platform
+from dataclasses import asdict
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from time import monotonic
 from typing import Any, TextIO
 
 from .actions import ACTION_TO_INDEX, Action
+from .scoring import ScoringSummary
 
 
 class RunTrace:
@@ -24,6 +26,7 @@ class RunTrace:
         self.active: int | None = None
         self.request_frame = self.apply_frame = 0
         self.pending_frame = 0
+        self.summary = ScoringSummary()
         packages = {}
         for name in (
             "typesafe-mario",
@@ -42,7 +45,7 @@ class RunTrace:
         }
         self.write(
             "metadata",
-            schema_version=1,
+            schema_version=2,
             python=platform.python_version(),
             packages=packages,
             source_sha256=sources,
@@ -85,6 +88,7 @@ class RunTrace:
         self.frame = 0
         self.ended = False
         self.pending = self.active = None
+        self.summary.begin(snapshot)
         self.write("episode_start", seed=seed, **self.evidence(info, ram, snapshot))
 
     def request(self, index: int, snapshot: Any, committed: Action, horizon: int) -> None:
@@ -103,6 +107,7 @@ class RunTrace:
         self.active = index
         self.request_frame = self.pending_frame
         self.apply_frame = self.frame
+        self.summary.mark_interval(self.frame)
         self.pending = None
         self.write("apply", decision=index, request_frame=self.request_frame, action=action.value)
 
@@ -118,6 +123,7 @@ class RunTrace:
         truncated: bool,
     ) -> None:
         self.frame += 1
+        self.summary.observe(snapshot)
         self.write(
             "frame",
             decision=self.active,
@@ -128,6 +134,15 @@ class RunTrace:
             truncated=bool(truncated),
             **self.evidence(info, ram, snapshot),
         )
+        if snapshot.scoring is not None:
+            for event in snapshot.scoring.events:
+                fields = asdict(event)
+                kind = fields.pop("kind")
+                fields.pop("frame")
+                self.write(kind, decision=self.active, **fields)
+
+    def scoring_result(self) -> dict[str, Any]:
+        return self.summary.interval_result()
 
     def execution(self) -> dict[str, int]:
         return {
@@ -145,5 +160,6 @@ class RunTrace:
                 reason=reason,
                 active_decision=self.active,
                 pending_decision=self.pending,
+                summary=self.summary.episode_result(),
             )
             self.ended = True

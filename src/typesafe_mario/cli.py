@@ -20,6 +20,15 @@ def _demo_ram() -> bytearray:
     ram[0x006E] = 0
     ram[0x0087] = 214
     ram[0x00CF] = 79
+    ram[0x000E] = 8
+    ram[0x00B5] = ram[0x00B6] = 1
+    ram[0x00CE] = 79
+    ram[0x071D] = 255
+    ram[0x074E] = 1
+    ram[0x04AC:0x04B0] = bytes((175, 99, 185, 111))
+    ram[0x04B0:0x04B4] = bytes((217, 99, 227, 107))
+    # Visible coin at world x=192, screen y=64; separate from the solid grid.
+    ram[0x0500 + 2 * 16 + 12] = 0xC2
     # Fill the tile-map row immediately below Mario with solid ground.
     ground_row = (79 + 16 - 32) // 16
     for column in range(16):

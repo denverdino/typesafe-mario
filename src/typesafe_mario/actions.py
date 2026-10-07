@@ -37,18 +37,25 @@ ACTION_DESCRIPTIONS: dict[Action, str] = {
     Action.NOOP: "Release the controls and let current momentum continue.",
     Action.RIGHT: "Move right at normal speed without jumping.",
     Action.RIGHT_JUMP: (
-        "Start a controlled forward jump, or keep holding jump while rising to preserve height."
+        "Start a controlled forward jump for passage, a visible coin, an underside hit on "
+        "a coin_block/powerup_block ahead, touching a mushroom/fire flower, or a supported stomp "
+        "opportunity, or keep holding jump while rising to preserve height."
     ),
     Action.RIGHT_RUN: (
         "Run right only while trusted terrain is clear and "
         "`hazard.jump_must_start_this_decision` is false."
     ),
     Action.RIGHT_RUN_JUMP: (
-        "Start a running jump when terrain or projected contact requires it, or keep holding "
+        "Start a running jump when terrain, projected contact or a low-risk scoring opportunity "
+        "calls for it, or keep holding "
         "it while rising. Prefer this when `hazard.jump_must_start_this_decision` is true."
     ),
     Action.JUMP: (
-        "Jump mostly in place, or keep holding jump while rising when forward motion is unsafe."
+        "Jump without directional input for safe passage, an immediately reachable visible "
+        "coin, touching a mushroom/fire flower, or hitting a coin_block/powerup_block from "
+        "below when aligned. Existing horizontal momentum "
+        "continues. Start a fresh jump from the ground, "
+        "or keep holding jump while rising when forward motion is unsafe. Do not linger to farm."
     ),
     Action.LEFT: "Move left to evade danger or recover from an overshoot.",
 }

@@ -46,6 +46,21 @@ def clamp01(value: float | None) -> float:
     return max(0.0, min(1.0, float(value)))
 
 
+def scoring_metrics(snapshot: MarioSnapshot) -> tuple[tuple[str, str], ...]:
+    return tuple(
+        (
+            label,
+            f"{value:,}" if (value := getattr(snapshot.scoring, field, None)) is not None else "—",
+        )
+        for label, field in (
+            ("Score", "score"),
+            ("Coin counter", "coin_counter"),
+            ("Collected (confirmed)", "confirmed_coins_collected"),
+            ("Stomps (confirmed)", "confirmed_stomps"),
+        )
+    )
+
+
 class LiveDashboard:
     """One-window game feed and TypeSafe telemetry display."""
 
@@ -188,7 +203,7 @@ class LiveDashboard:
         game_x = margin
         game_y = header_h + 14
         game_w = panel_x - margin * 2
-        game_h = c.height - game_y - margin
+        game_h = c.height - game_y - margin - 70
 
         self._text("TypeSafe plays Mario", self.font_title, t.text, margin, 18)
         if run_ended:
@@ -215,6 +230,11 @@ class LiveDashboard:
         )
         self._rule(margin, header_h, c.width - margin * 2)
         self._draw_game(frame, game_x, game_y, game_w, game_h)
+        for index, (metric_label, value) in enumerate(scoring_metrics(snapshot)):
+            metric_x = game_x + index * (game_w // 4)
+            metric_y = game_y + game_h + 14
+            self._text(metric_label, self.font_small, t.muted, metric_x, metric_y)
+            self._text(value, self.font_title, t.text, metric_x, metric_y + 20)
 
         x = panel_x + 18
         width = c.panel_width - 42
@@ -232,7 +252,17 @@ class LiveDashboard:
             description = "Jev is evaluating the next bounded controller action."
         else:
             description = ACTION_DESCRIPTIONS[decision.action]
-        self._text(description, self.font_small, t.muted, x, y)
+        # The model's criteria can be longer than the panel; keep UI text bounded.
+        words = description.split()
+        for line in range(2):
+            visible = ""
+            while words and self.font_small.size((visible + " " + words[0]).strip())[0] <= width:
+                visible = (visible + " " + words.pop(0)).strip()
+            if line == 1 and words:
+                while visible and self.font_small.size(visible + "…")[0] > width:
+                    visible = visible[:-1]
+                visible += "…"
+            self._text(visible, self.font_small, t.muted, x, y + line * 15)
         y += 32
         self._rule(x, y, width)
         y += 18

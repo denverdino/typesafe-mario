@@ -57,7 +57,9 @@ Provide `TYPESAFE_API_KEY` through the environment. Never commit credentials, `.
 {
   "model": "jev-latest",
   "state": {
-    "objective": "Reach the flag in World 1-1 without dying.",
+    "objective": "Reach the flag in World 1-1 without dying. Prioritize survival and forward progress, then safely obtain mushroom/fire-flower upgrades, collect visible coins, hit reachable reward blocks from below, and stomp suitable enemies for additional score when the observed geometry supports a low-risk opportunity.",
+    "scoring": {},
+    "opportunities": {},
     "level": {},
     "player": {},
     "trajectory": {},
@@ -73,7 +75,10 @@ Provide `TYPESAFE_API_KEY` through the environment. Never commit credentials, `.
       "type": "choice",
       "instructions": {
         "question": "Which controller macro should Mario commit to next?",
-        "goal": "Advance toward the stage flag while avoiding death.",
+        "goal": "<snapshot.goal，与 state.objective 一致>",
+        "reward_blocks": "<使用 head_bump_geometry 判断靠近、对齐及向上顶击，并考虑惯性、承诺控制和 pursuit 约束>",
+        "powerups": "<强化砖与已生成道具的顶击、接取、惯性及安全约束>",
+        "scoring": "<沿途收益取舍、追分边界及不确定性说明>",
         "timing": "<按 decision_horizon_frames 生成的动作周期说明>",
         "geometry": "<当前地形提示词>",
         "trajectory": "<当前轨迹提示词>",
@@ -121,10 +126,33 @@ Provide `TYPESAFE_API_KEY` through the environment. Never commit credentials, `.
 | `recent_control` | 最近实际输入、观察帧数、前进像素及动作结果摘要。 |
 | `committed_control` | 已承诺宏 `action`、下一帧实际输入 `first_frame_action`、所选宏开始前的帧数 `frames_before_selected_action`，以及 `release_jump_while_falling`、`press_jump_on_landing`；未附加时为 `null`。 |
 | `episode` | 生命数、游戏剩余时间、当前/最佳进度、受阻帧数、死亡及通关标记。 |
+| `scoring` | 实际游戏分数、当前金币计数、上一实际帧分数差、确认收集/踩踏累计及未归因分数；未知为 null。确认计数是下界，金币计数不是累计收集量。 |
+| `scoring.pursuit` | `allow_extra_effort`、未刷新最佳横向进度的帧数、限制原因。游戏时间 <=100、时间未知或连续 48 帧未刷新最佳进度时停止额外追分，仍可在前进中顺便得分。 |
+| `opportunities` | availability、观测帧、世界横向观测边界 [left,right)、最多 8 个当前前方候选及 truncated。金币砖包含 Mario 当前所在列。相对坐标为像素，Y 正值向下；碰撞框为屏幕坐标；金币瓦片原点不冒充碰撞框。coin_block 区分 question/brick，required_interaction 为 hit_from_below，tile_bounds_screen_xyxy 是半开屏幕瓦片边界，不是碰撞框；另识别 0xc1 的 powerup_block；不包含隐藏砖、空砖或其他特殊奖励砖，不估计剩余金币数或顶砖成功率。 |
+
+每个机会包含 target_id、kind、observed_frame、relative_x_pixels、relative_y_pixels、
+world_x、collision_box_screen_xyxy、source、validity；敌人还包含 enemy_kind、
+motion_state、stompable 和 relative_velocity_x。无关或未知字段为 null。
+stompable 只表示已验证的对象状态允许踩踏，不是踩踏成功预测；未识别敌人继续留在 hazard，
+不能因为机会列表为空而认为没有危险。完整当前候选与事件证据保留在 debug_state。
+三个问题仍由 Jev 同时回答，jump_needed 现在也考虑符合通关优先要求的取币和踩踏跳跃。
 
 可用 `typesafe-mario state-demo` 查看完整示例状态；该命令不调用 Jev，也不展示完整 HTTP 请求。`debug_state`、`state_text`、RAM 和截图不在当前 Jev 请求中。每次调用发送当前结构化状态及问题，代码不附加聊天历史。
 
 ### 响应：按问题名称返回答案
+
+奖励砖的 `head_bump_geometry` 描述当前背景碰撞头部探测点，包含头部世界 X、
+屏幕 Y、砖块横向边界相对头部的半开区间、头部到砖底的上升距离（正数表示在下方）
+及砖块弹跳是否进行中。小 Mario/蹲下与站立大 Mario 的偏移不同；不支持的游泳
+状态为 null。字段不是未来命中预测。`reward_blocks` 提示仅在 pursuit 允许且当前
+候选列表有已知头部几何的金币砖或强化砖时发送；Jev 判断对齐、惯性、承诺动作和安全性，
+选择现有宏，执行器不覆盖选择。
+
+powerup_block.expected_powerup_if_hit_now 依据当前 RAM 状态给出条件性产物；顶出后以
+独立槽位的 powerup.powerup_kind 为准。emergence_phase 区分 emerging/active，早期
+未更新接触几何时碰撞框为 null。道具用触碰接取，不作为敌人或踩踏目标；player 新增
+collision_box_screen_xyxy 用于比较双方屏幕碰撞框。powerups 提示仅在 pursuit 允许
+且当前列表存在强化砖或道具时启用；顶出、消失或分数变化都不单独证明已获得强化。
 
 以下为格式示例，概率、模型名称和 token 数仅为演示值，不是实测结果。响应的 `model` 是服务返回的模型名称，可能不同于请求中的别名。
 
@@ -181,3 +209,10 @@ Provide `TYPESAFE_API_KEY` through the environment. Never commit credentials, `.
 `choices`、`nouls`、`scores` 是 SDK 从 `answers` 派生的访问视图，不是三个额外的 HTTP 响应顶层字段。当前代码直接采用 `next_action.choice`；跳跃概率和危险评分不作为二次动作覆盖规则。宏随后由执行器逐帧展开，因此所选宏与某帧实际按键可以不同。
 
 `artifacts/run-*.jsonl` 保存状态、解析后的决策、执行信息和奖励等本地记录，不是原始 HTTP 响应归档；当前记录不保留响应 `model`、`usage` 或完整 `danger` 分布。分析时应区分模型输入、模型选择和实际执行。
+
+得分扩展：决策日志的 scoring_result 记录 (start_frame,end_frame] 实际执行区间的收益，
+不回填进请求时 state。trace schema_version=2 记录确认的收集、踩踏、受伤与分数变化，
+episode_end.summary 包含累计收益和观测覆盖情况。初始 NOOP 收益只进入整局累计。
+score_before_clear 为首次 clear 前紧邻观测的分数，score_at_clear 为 clear 帧分数；
+两者都不是结束动画结算后的最终分数。缺失分数不按零计算，确认事件数只提供下界。
+无法唯一证明来源的分数归入 unattributed_score_gain；不会仅凭同时发生就把分数归因给踩踏或金币。

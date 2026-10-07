@@ -61,6 +61,14 @@ class FrameEnvironment:
         self.closed = True
 
 
+class ScoringEnvironment(FrameEnvironment):
+    def info(self):
+        info = super().info()
+        coins = sum(self.frame >= frame for frame in (5, 10, 13))
+        info.update(score=coins * 200, coins=coins)
+        return info
+
+
 class RecordingPolicy:
     def __init__(self, action: Action | None = None) -> None:
         self.snapshots = []
@@ -204,6 +212,96 @@ class RunnerTests(unittest.TestCase):
                 else []
             )
         return env, policy, dashboard, records
+
+    def test_scoring_includes_warmup_and_partial_terminal_cycle(self):
+        env, _, _, records = self.run_scene(environment=ScoringEnvironment(terminal_frame=13))
+        result = records[0]["scoring_result"]
+        self.assertEqual((result["start_frame"], result["end_frame"]), (8, 13))
+        self.assertEqual(result["score_gain"], 400)
+        self.assertEqual(result["confirmed_coins"], 2)
+        self.assertEqual(env.trace[-1]["summary"]["net_score_gain"], 600)
+        self.assertEqual(env.trace[-1]["summary"]["confirmed_coins_collected"], 3)
+
+    def test_paused_inference_does_not_duplicate_scoring(self):
+        env, _, _, _ = self.run_scene(
+            delay_ticks=12, environment=ScoringEnvironment(terminal_frame=13)
+        )
+        self.assertEqual(env.trace[-1]["summary"]["confirmed_coins_collected"], 3)
+        self.assertEqual(len([e for e in env.trace if e["event"] == "coin_collected"]), 3)
+
+    def test_scoring_result_does_not_mutate_request_snapshot(self):
+        _, policy, _, records = self.run_scene(environment=ScoringEnvironment(terminal_frame=13))
+        self.assertEqual(records[0]["state"]["scoring"]["score"], 0)
+        self.assertEqual(policy.snapshots[0].scoring.score, 0)
+        self.assertEqual(records[0]["scoring_result"]["score_gain"], 400)
+
+    def test_restart_clears_episode_summary(self):
+        env, _, _, _ = self.run_scene(
+            restart_tick=11, environment=ScoringEnvironment(terminal_frame=13)
+        )
+        ends = [e for e in env.trace if e["event"] == "episode_end"]
+        self.assertEqual([e["summary"]["confirmed_coins_collected"] for e in ends], [2, 3])
+
+    def test_restart_flushes_partial_active_decision_once(self):
+        _, _, _, records = self.run_scene(
+            restart_tick=11, environment=ScoringEnvironment(terminal_frame=13)
+        )
+        self.assertEqual(
+            [
+                (
+                    r["execution"]["episode"],
+                    r["scoring_result"]["start_frame"],
+                    r["scoring_result"]["end_frame"],
+                )
+                for r in records
+            ],
+            [(0, 8, 11), (1, 8, 13)],
+        )
+        self.assertEqual([r["scoring_result"]["score_gain"] for r in records], [200, 400])
+
+    def test_quit_flushes_partial_active_decision_once(self):
+        class QuitDashboard(RecordingDashboard):
+            def draw(self, *args, **kwargs):
+                result = super().draw(*args, **kwargs)
+                return DashboardCommand.QUIT if self.env.frame == 11 else result
+
+        with patch(f"{__name__}.RecordingDashboard", QuitDashboard):
+            env, _, _, records = self.run_scene(environment=ScoringEnvironment(terminal_frame=13))
+        self.assertEqual(env.trace[-1]["reason"], "quit")
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["scoring_result"]["end_frame"], 11)
+        self.assertEqual(records[0]["scoring_result"]["score_gain"], 200)
+
+    def test_error_flushes_partial_active_decision_once(self):
+        class FailingEnvironment(ScoringEnvironment):
+            def step(self, action):
+                if self.frame == 11:
+                    raise RuntimeError("synthetic step failure")
+                return super().step(action)
+
+        env = FailingEnvironment()
+        with (
+            TemporaryDirectory() as temporary,
+            patch("typesafe_mario.runner.create_mario_env", return_value=env),
+            redirect_stdout(io.StringIO()),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "synthetic step failure"):
+                run_episode(
+                    env_id="test",
+                    policy=RecordingPolicy(),
+                    frames_per_decision=8,
+                    max_decisions=2,
+                    seed=123,
+                    artifacts_dir=Path(temporary),
+                    display="none",
+                )
+            path = next(
+                p for p in Path(temporary).glob("*.jsonl") if not p.name.endswith(".trace.jsonl")
+            )
+            records = [json.loads(line) for line in path.read_text().splitlines()]
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["scoring_result"]["end_frame"], 11)
+        self.assertEqual(records[0]["scoring_result"]["score_gain"], 200)
 
     def test_boundary_preserves_a_new_jump_until_the_game_consumes_it(self):
         for macro, held in (

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import ExitStack
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -72,6 +73,7 @@ def _record_decision(
     terminated: bool,
     truncated: bool,
     execution: dict[str, int],
+    scoring_result: dict[str, Any],
 ) -> None:
     record = {
         "decision": decision_index,
@@ -88,6 +90,7 @@ def _record_decision(
         "terminated": bool(terminated),
         "truncated": bool(truncated),
         "execution": execution,
+        "scoring_result": scoring_result,
     }
     log.write(json.dumps(record, separators=(",", ":")) + "\n")
     log.flush()
@@ -128,8 +131,32 @@ def _run_decision_cycles(
     )
     run_ended = max_decisions <= 0 or snapshot.dead or snapshot.clear
     trace.begin(info, _unwrap_ram(env), snapshot, seed=seed)
+    last_recorded: tuple[int, int] | None = None
 
-    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="typesafe-jev") as executor:
+    def flush_decision() -> None:
+        nonlocal last_recorded
+        key = (trace.episode, active_index)
+        if active_decision is None or trace.frame <= trace.apply_frame or last_recorded == key:
+            return
+        _record_decision(
+            log,
+            decision_index=active_index,
+            snapshot=active_snapshot,
+            decision=active_decision,
+            reward=reward_since_decision,
+            terminated=terminated,
+            truncated=truncated,
+            execution=trace.execution(),
+            scoring_result=trace.scoring_result(),
+        )
+        last_recorded = key
+
+    with (
+        ExitStack() as cleanup,
+        ThreadPoolExecutor(max_workers=1, thread_name_prefix="typesafe-jev") as executor,
+    ):
+        # Preserve the observed part of an active cycle on quit or an exception.
+        cleanup.callback(flush_decision)
         while True:
             decision_updated = False
             if (
@@ -219,16 +246,7 @@ def _run_decision_cycles(
                 if active_decision is not None and (
                     cycle_frames >= frames_per_decision or run_ended
                 ):
-                    _record_decision(
-                        log,
-                        decision_index=active_index,
-                        snapshot=active_snapshot,
-                        decision=active_decision,
-                        reward=reward_since_decision,
-                        terminated=terminated,
-                        truncated=truncated,
-                        execution=trace.execution(),
-                    )
+                    flush_decision()
 
             if run_ended:
                 trace.end(
@@ -273,6 +291,7 @@ def _run_decision_cycles(
                     pending.cancel()
                 break
             if command == DashboardCommand.RESTART:
+                flush_decision()
                 trace.end("restart")
                 if pending is not None:
                     pending.cancel()

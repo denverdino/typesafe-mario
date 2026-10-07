@@ -5,6 +5,8 @@ from dataclasses import asdict, dataclass, field, replace
 from math import ceil
 from typing import Any
 
+from .scoring import ScoringObservation, ScoringTracker
+
 ENEMY_NAMES: dict[int, str] = {
     0x00: "green_koopa",
     0x06: "goomba",
@@ -135,6 +137,7 @@ class MarioSnapshot:
     last_grounded_gap_right_edge_visible: bool = False
     player_collision_box: tuple[int, int, int, int] | None = None
     foot_y_screen: int | None = None
+    scoring: ScoringObservation | None = None
 
     def navigation_features(self) -> dict[str, Any]:
         rows = self.local_grid
@@ -367,6 +370,47 @@ class MarioSnapshot:
         }
 
     def to_state(self) -> dict[str, Any]:
+        observation = self.scoring
+        reasons = []
+        if observation is None or not observation.time_known:
+            reasons.append("unknown_time")
+        elif self.time_left <= 100:
+            reasons.append("low_time")
+        if observation is not None and observation.no_best_progress_frames >= 48:
+            reasons.append("no_best_progress")
+        scoring = {
+            name: getattr(observation, name) if observation is not None else None
+            for name in (
+                "score",
+                "coin_counter",
+                "score_delta_since_previous_observation",
+                "confirmed_coins_collected",
+                "confirmed_stomps",
+                "unattributed_score_gain",
+                "observation_frame",
+            )
+        }
+        scoring["pursuit"] = {
+            "allow_extra_effort": not reasons,
+            "no_best_progress_frames": (
+                observation.no_best_progress_frames if observation is not None else None
+            ),
+            "reasons": reasons,
+        }
+        opportunities = (
+            asdict(observation.opportunities)
+            if observation is not None
+            else {
+                "availability": "unavailable",
+                "observation_frame": self.observation_frame,
+                "world_x_bounds": None,
+                "items": (),
+            }
+        )
+        opportunities["truncated"] = len(opportunities["items"]) > 8
+        opportunities["items"] = list(opportunities["items"][:8])
+        opportunities["relative_y_positive"] = "down"
+        opportunities["world_x_bounds_convention"] = "[left, right)"
         terrain = self.navigation_features()
         terrain.pop("summary", None)
         terrain["observation_reliability"] = (
@@ -408,6 +452,8 @@ class MarioSnapshot:
         )
         return {
             "objective": self.goal,
+            "scoring": scoring,
+            "opportunities": opportunities,
             "level": {"world": self.world, "stage": self.stage, "area": self.area},
             "player": {
                 "x": self.x,
@@ -417,6 +463,7 @@ class MarioSnapshot:
                 "grounded": self.grounded,
                 "jump_phase": self.jump_phase,
                 "powerup_status": self.status,
+                "collision_box_screen_xyxy": self.player_collision_box,
             },
             "trajectory": {
                 "airborne_frames": self.airborne_frames,
@@ -469,6 +516,7 @@ class MarioSnapshot:
     def to_debug_state(self) -> dict[str, Any]:
         return {
             "model_state": self.to_state(),
+            "scoring_observations": asdict(self.scoring) if self.scoring is not None else None,
             "raw": {
                 "player_state": self.player_state,
                 "jump_press_pending": self.jump_press_pending,
@@ -547,10 +595,16 @@ class MarioStateParser:
 
     def __init__(
         self,
-        goal: str = "Reach the flag in World 1-1 without dying.",
+        goal: str = (
+            "Reach the flag in World 1-1 without dying. Prioritize survival and forward "
+            "progress, then safely obtain mushroom/fire-flower upgrades, collect visible coins, "
+            "hit reachable reward blocks from below, and stomp suitable enemies "
+            "for additional score when the observed geometry supports a low-risk opportunity."
+        ),
         decision_horizon_frames: int = 8,
     ) -> None:
         self.goal = goal
+        self._scoring_tracker = ScoringTracker()
         self.decision_horizon_frames = decision_horizon_frames
         self._last_x: int | None = None
         self._last_y: int | None = None
@@ -796,7 +850,7 @@ class MarioStateParser:
         self._last_x = x
         self._last_y = y
         self._last_jump_phase = jump_phase
-        return snapshot
+        return replace(snapshot, scoring=self._scoring_tracker.observe(info, ram, snapshot))
 
     @staticmethod
     def _has_support_below(grid: Sequence[str]) -> bool:
